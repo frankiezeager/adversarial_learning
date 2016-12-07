@@ -1,2 +1,2 @@
 # adversarial_learning
-Adversarial Learning for Credit Card Fraud Detection
+Using Adversarial Learning for Credit Card Fraud Detection
