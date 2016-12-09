@@ -118,19 +118,27 @@ for i in folds:
     
     mod_test = mod.predict(testcol)
     
-    #output coverage curve csv (predicted probabilities)
+#####output coverage curve csv (predicted probabilities)######################
     prob_test=mod.predict_proba(testcol)
     prob_test=pd.DataFrame(prob_test)
-    prob_target=testcol.FRD_IND
-    prob_test=pd.concat((prob_test,prob_target,mod_test),axis=1)
-    prob_col_list=['index','prob_0','prob_1','truth_val','pred_truth_val']
-    prob_test.columns=prob_col_list
+    #real truth values
+    prob_target=test.FRD_IND
+    #predicted truth values
+    prob_pred_truth=pd.DataFrame(mod_test)
+    prob_df=pd.concat([prob_test.reset_index(),prob_target.reset_index(),prob_pred_truth.reset_index()],axis=1)
+    prob_col_list=['index1','prob_0','prob_1','index2','truth_val','index3','pred_truth_val']
+    prob_df.columns=prob_col_list
+    prob_df=prob_df.drop('index1','index2','index3')
     path='/Applications/Graduate School/Fall 2016/Capstone/code/' #set path
     prob_test.to_csv(path+'both_learn_coverage_'+str(iteration_num)+'.csv')
-    
+###############################################################################
+
+    #find false negative rate
     cmfull=confusion_matrix(test['FRD_IND'],mod_test)    
     listFNR.append(cmfull[0][1])
     fpr, tpr, thresholds = metrics.roc_curve(test['FRD_IND'], mod_test, pos_label=2)
+    
+    #find auc score
     print(roc_auc_score(test['FRD_IND'],mod_test ))
     AUC_list.append(roc_auc_score(test['FRD_IND'],mod_test ))
     
