@@ -10,19 +10,16 @@ os.chdir(path)
 names=[]
 
 #for all the folds in synthetic data (printed in different csvs)
-for file in list(ls ('both_learn_coverage_[0-9]+.csv')):
+for file in list(ls ('[0-9]*.csv')):
     name='probabilities'+str(file)
     #read csvs
     name=pd.read_csv(path+file)
     #sort by descending probability of being fraud
     name.sort_values(['prob_1'],ascending=False)
     #find the percent of fraud caught
-    name.pct_fraud_caught=np.cumsum(name.pred_truth_val)/np.cumsum(name.truth_val)
-    #plot the coverage curve
-    plt.plot(name.prob_1,name.pct_fraud_caught)
-    plt.ylab('Percentage of Fraud Caught')
-    plt.xlab('Score Band (Most Risky to Least Risky)')
-    plt.show()
+    name.pct_fraud_caught=name.
+    #plot thecoverage curve
+    #plt.plot(name.'prob_1')
     #names.append(name)
 
 

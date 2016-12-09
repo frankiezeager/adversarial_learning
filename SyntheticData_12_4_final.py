@@ -122,9 +122,11 @@ for i in folds:
     prob_test=mod.predict_proba(testcol)
     prob_test=pd.DataFrame(prob_test)
     prob_target=testcol.FRD_IND
-    prob_test=pd.concat((prob_test,prob_target),axis=1)
+    prob_test=pd.concat((prob_test,prob_target,mod_test),axis=1)
+    prob_col_list=['index','prob_0','prob_1','truth_val','pred_truth_val']
+    prob_test.columns=prob_col_list
     path='/Applications/Graduate School/Fall 2016/Capstone/code/' #set path
-    prob_test.to_csv(path+str(iteration_num)+'.csv')
+    prob_test.to_csv(path+'both_learn_coverage_'+str(iteration_num)+'.csv')
     
     cmfull=confusion_matrix(test['FRD_IND'],mod_test)    
     listFNR.append(cmfull[0][1])
