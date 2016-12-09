@@ -121,6 +121,8 @@ for i in folds:
     #output coverage curve csv (predicted probabilities)
     prob_test=mod.predict_proba(testcol)
     prob_test=pd.DataFrame(prob_test)
+    prob_target=testcol.FRD_IND
+    prob_test=pd.concat((prob_test,prob_target),axis=1)
     prob_test.to_csv('/Applications/Graduate School/Fall 2016/Capstone/code/'+str(iteration_num)+'.csv')
     
     cmfull=confusion_matrix(test['FRD_IND'],mod_test)    
