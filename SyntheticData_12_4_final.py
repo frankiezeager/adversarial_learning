@@ -128,9 +128,9 @@ for i in folds:
     prob_df=pd.concat([prob_test.reset_index(),prob_target.reset_index(),prob_pred_truth.reset_index()],axis=1)
     prob_col_list=['index1','prob_0','prob_1','index2','truth_val','index3','pred_truth_val']
     prob_df.columns=prob_col_list
-    prob_df=prob_df.drop('index1','index2','index3')
+    prob_df=prob_df.drop(['index1','index2','index3'],axis=1)
     path='/Applications/Graduate School/Fall 2016/Capstone/code/' #set path
-    prob_test.to_csv(path+'both_learn_coverage_'+str(iteration_num)+'.csv')
+    prob_df.to_csv(path+'both_learn_coverage_'+str(iteration_num)+'.csv')
 ###############################################################################
 
     #find false negative rate
