@@ -21,7 +21,7 @@ from itertools import cycle
 
 
 colnames = ['AUTH_ID','ACCT_ID_TOKEN','FRD_IND','ACCT_ACTVN_DT','ACCT_AVL_CASH_BEFORE_AMT','ACCT_AVL_MONEY_BEFORE_AMT','ACCT_CL_AMT','ACCT_CURR_BAL','ACCT_MULTICARD_IND','ACCT_OPEN_DT','ACCT_PROD_CD','ACCT_TYPE_CD','ADR_VFCN_FRMT_CD','ADR_VFCN_RESPNS_CD','APPRD_AUTHZN_CNT','APPRD_CASH_AUTHZN_CNT','ARQC_RSLT_CD','AUTHZN_ACCT_STAT_CD','AUTHZN_AMT','AUTHZN_CATG_CD','AUTHZN_CHAR_CD','AUTHZN_OPSET_ID','AUTHZN_ORIG_SRC_ID','AUTHZN_OUTSTD_AMT','AUTHZN_OUTSTD_CASH_AMT','AUTHZN_RQST_PROC_CD','AUTHZN_RQST_PROC_DT','AUTHZN_RQST_PROC_TM','AUTHZN_RQST_TYPE_CD','AUTHZN_TRMNL_PIN_CAPBLT_NUM','AVG_DLY_AUTHZN_AMT','CARD_VFCN_2_RESPNS_CD','CARD_VFCN_2_VLDTN_DUR','CARD_VFCN_MSMT_REAS_CD','CARD_VFCN_PRESNC_CD','CARD_VFCN_RESPNS_CD','CARD_VFCN2_VLDTN_CD','CDHLDR_PRES_CD','CRCY_CNVRSN_RT','ELCTR_CMRC_IND_CD','HOME_PHN_NUM_CHNG_DUR','HOTEL_STAY_CAR_RENTL_DUR','LAST_ADR_CHNG_DUR','LAST_PLSTC_RQST_REAS_CD','MRCH_CATG_CD','MRCH_CNTRY_CD','NEW_USER_ADDED_DUR','PHN_CHNG_SNC_APPN_IND','PIN_BLK_CD','PIN_VLDTN_IND','PLSTC_ACTVN_DT','PLSTC_ACTVN_REQD_IND','PLSTC_FRST_USE_TS','PLSTC_ISU_DUR','PLSTC_PREV_CURR_CD','PLSTC_RQST_TS','POS_COND_CD','POS_ENTRY_MTHD_CD','RCURG_AUTHZN_IND','RVRSL_IND','SENDR_RSIDNL_CNTRY_CD','SRC_CRCY_CD','SRC_CRCY_DCML_PSN_NUM','TRMNL_ATTNDNC_CD','TRMNL_CAPBLT_CD','TRMNL_CLASFN_CD','TRMNL_ID','TRMNL_PIN_CAPBLT_CD','DISTANCE_FROM_HOME']
-df = pd.read_csv('/Applications/Graduate School/Fall 2016/Capstone/code/training_part_10_of_10.txt', delimiter='|',header=None, names=colnames)
+df = pd.read_csv('/Users/frankiezeager/Documents/Graduate School/Capstone/training_part_10_of_10.txt', delimiter='|',header=None, names=colnames)
 df1 = df.sample(n=1000000)
 df1.dtypes
 
@@ -40,7 +40,7 @@ t_ind = [2, 7, 14, 18, 30, 44, 57, 58, 68]
 
 
 #cols = pd.DataFrame(j.iloc[:,t_ind])
-df1 = pd.DataFrame(df1.iloc[:,t_ind]) 
+df1 = pd.DataFrame(df1.iloc[:,t_ind])
 
 
 df1_MRCHCODE = pd.get_dummies(df1['MRCH_CATG_CD']) #converting to dummy variables
@@ -115,9 +115,9 @@ for i in folds:
     mod = logit.fit(train_cols, train['FRD_IND'])
     model_list.append(mod)
     testcol = test.drop('FRD_IND',axis=1)
-    
+
     mod_test = mod.predict(testcol)
-    
+
 #####output coverage curve csv (predicted probabilities)######################
     prob_test=mod.predict_proba(testcol)
     prob_test=pd.DataFrame(prob_test)
@@ -134,17 +134,17 @@ for i in folds:
 ###############################################################################
 
     #find false negative rate
-    cmfull=confusion_matrix(test['FRD_IND'],mod_test)    
+    cmfull=confusion_matrix(test['FRD_IND'],mod_test)
     listFNR.append(cmfull[0][1])
     fpr, tpr, thresholds = metrics.roc_curve(test['FRD_IND'], mod_test, pos_label=2)
-    
+
     #find auc score
     print(roc_auc_score(test['FRD_IND'],mod_test ))
     AUC_list.append(roc_auc_score(test['FRD_IND'],mod_test ))
-    
-    
+
+
     #batches
-    chunk_size = math.floor(test.shape[0]/3) #3 transaction strategies 
+    chunk_size = math.floor(test.shape[0]/3) #3 transaction strategies
     chunk_size
     all_batches = []
     for t, B_t in test.groupby(np.arange(len(test)) // chunk_size):
@@ -152,7 +152,7 @@ for i in folds:
         #check for fraud transactions
         if (sum(B_t['FRD_IND']) != 0):
             all_batches.append(B_t)
-    
+
     fn_rate = []
     for j in all_batches:
         cols=j.iloc[:,:-1]
@@ -160,12 +160,12 @@ for i in folds:
         pred = mod.predict(cols)
         cm = confusion_matrix(col_response, pred)
         FNR = cm[0][1]
-        fn_rate.append(FNR)        
-     
+        fn_rate.append(FNR)
+
     best_strat = fn_rate.index(max(fn_rate))
     best_strat_list.append(best_strat)
-    best_fold = all_batches[best_strat]         
-            
+    best_fold = all_batches[best_strat]
+
     #Implement SMOTE
     #test_cols = test.drop("Class", axis = 1)
     test_cols = best_fold.drop('FRD_IND',axis=1)
@@ -176,10 +176,10 @@ for i in folds:
     smoy = pd.DataFrame(smoy)
     syntheticdata = pd.concat((smox,smoy), axis=1)
     syntheticdata.columns=col_list
-    
+
     #take all of the synthetic data as an out-of-time sample
-    allsynthetic_sets.append(syntheticdata) 
-        
+    allsynthetic_sets.append(syntheticdata)
+
     #take all the fraudulent transactions of best strategy batch and add it to the next fold
     fraud_trans = syntheticdata[syntheticdata.iloc[:,-1] == 1]
     #append the fraud transactions to fold+1
@@ -187,8 +187,8 @@ for i in folds:
         folds[iteration_num+1]=pd.concat([folds[iteration_num+1], fraud_trans], axis=0)
         iteration_num = iteration_num+ 1
         print(iteration_num)
-    
-    
+
+
 
 #plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
 #plt.xlim([-0.05, 1.05])
@@ -199,11 +199,11 @@ for i in folds:
 #plt.legend(loc="lower right")
 #plt.show()
 
-        
+
 #having three out-of-time sets from synthetic data
 i_num = 1
 for l, color, z in zip(allsynthetic_sets, colors, model_list):
-    syntheticdata_test=l.drop('FRD_IND',axis=1) 
+    syntheticdata_test=l.drop('FRD_IND',axis=1)
     #mod_test2 = z.predict(syntheticdata_test)
     mod_test3 = z.predict_proba(syntheticdata_test)[:,1]
     #cmfull=confusion_matrix(l['FRD_IND'],mod_test2)
@@ -213,11 +213,11 @@ for l, color, z in zip(allsynthetic_sets, colors, model_list):
     print("The Outside of Time Sample AUC score is:", roc_auc_score(l['FRD_IND'],mod_test3 ))
     #aucscore = roc_auc_score(l['FRD_IND'],mod_test2 )
     #getting predicted probablilites for fraud
-    #mod_test3 = z.predict_proba(syntheticdata_test)[:,1] 
+    #mod_test3 = z.predict_proba(syntheticdata_test)[:,1]
     #fpr1, tpr1, _ = roc_curve(l['FRD_IND'], mod_test3)
     aucscore = auc(fpr, tpr )
     plt.plot(fpr, tpr, lw=lw, color=color, label='ROC fold %d (area = %0.2f)' % (i_num, aucscore))
-    i_num += 1 
+    i_num += 1
 
 #adding ROC curve code
 plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
@@ -233,7 +233,7 @@ plt.show()
 firstmod = model_list[0] #original model
 i_num = 1
 for l, color in zip(allsynthetic_sets, colors):
-    syntheticdata_test=l.drop('FRD_IND',axis=1) 
+    syntheticdata_test=l.drop('FRD_IND',axis=1)
     #mod_test2 = z.predict(syntheticdata_test)
     mod_test3 = firstmod.predict_proba(syntheticdata_test)[:,1]
     #cmfull=confusion_matrix(l['FRD_IND'],mod_test2)
@@ -243,7 +243,7 @@ for l, color in zip(allsynthetic_sets, colors):
     print("The Outside of Time Sample AUC score is:", roc_auc_score(l['FRD_IND'],mod_test3 ))
     #aucscore = roc_auc_score(l['FRD_IND'],mod_test2 )
     #getting predicted probablilites for fraud
-    #mod_test3 = z.predict_proba(syntheticdata_test)[:,1] 
+    #mod_test3 = z.predict_proba(syntheticdata_test)[:,1]
     #fpr1, tpr1, _ = roc_curve(l['FRD_IND'], mod_test3)
     aucscore = auc(fpr, tpr)
     plt.plot(fpr, tpr, lw=lw, color=color, label='ROC fold %d (area = %0.2f)' % (i_num, aucscore))
