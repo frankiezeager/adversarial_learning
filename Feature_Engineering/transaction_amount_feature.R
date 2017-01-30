@@ -19,11 +19,8 @@ df=as.data.table(df)
 setkey(df, "ACCT_ID_TOKEN", "AUTHZN_RQST_PROC_DT")
 
 # calculate rolling average by account number
-df[, Roll.Avg.Trans.Amt := roll_meanr(AUTHZN_AMT, 30), by = ACCT_ID_TOKEN]
+df[, Roll.Avg.Trans.Amt := roll_meanl(AUTHZN_AMT, 30), by = ACCT_ID_TOKEN]
 
 #calculate difference between average and current transaction amount
 df$Diff_Roll_Avg_Amt<-df$Roll.Avg.Trans.Amt-df$AUTHZN_AMT
 
-
-#questions:what to do with NA's because not enough data available? treat as 0? impute? leave as NA?
-#other q: other variables we should use?
