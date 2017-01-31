@@ -36,7 +36,5 @@ df2 = df %>%
 #df2
 
 #test
-order_df<-df[order(ACCT_ID_TOKEN),]
-
-order_df$amt.mean.15
+head(df2$amt.mean.15)
 
