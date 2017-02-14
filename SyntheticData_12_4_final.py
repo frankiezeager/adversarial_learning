@@ -17,6 +17,11 @@ from sklearn.metrics import roc_curve, auc, roc_auc_score
 import statsmodels.api as sm #package for logistic regression
 import matplotlib.pyplot as plt
 from itertools import cycle
+from sklearn import mixture
+from mpl_toolkits.mplot3d import Axes3D
+import itertools
+from scipy import linalg
+import matplotlib as mpl
 
 
 
@@ -129,7 +134,7 @@ for i in folds:
     prob_col_list=['index1','prob_0','prob_1','index2','truth_val','index3','pred_truth_val']
     prob_df.columns=prob_col_list
     prob_df=prob_df.drop(['index1','index2','index3'],axis=1)
-    path='/Applications/Graduate School/Fall 2016/Capstone/code/' #set path
+    path='/Documents/Graduate School/Fall 2016/Capstone/code/' #set path
     prob_df.to_csv(path+'both_learn_coverage_'+str(iteration_num)+'.csv')
 ###############################################################################
 
@@ -142,12 +147,43 @@ for i in folds:
     print(roc_auc_score(test['FRD_IND'],mod_test ))
     AUC_list.append(roc_auc_score(test['FRD_IND'],mod_test ))
 
+#########Gaussian Mixture Model to Determine Strategies#############
+ 
+    #subset df to include only pertinent (adversarial-controlled) continuous vars
+    strat_ind = [18,53,68,7,23]
+    strategy_df= pd.DataFrame(test.iloc[:,strat_ind])
 
+
+    #find best number of strategies:
+    lowest_bic = np.infty
+    bic = []
+    n_components_range = range(1, 7)
+    cv_types = ['spherical', 'tied', 'diag', 'full']
+    for cv_type in cv_types:
+        for n_components in n_components_range:
+            # Fit a Gaussian mixture with EM
+            gmm = mixture.GaussianMixture(n_components=n_components,
+                                          covariance_type=cv_type)
+            gmm.fit(strategy_df)
+            bic.append(gmm.bic(strategy_df))
+            if bic[-1] < lowest_bic:
+                lowest_bic = bic[-1]
+                print("current GMM is: ",gmm)
+                best_gmm = gmm
+    print("The optimal GMM is", best_gmm)
+    
+    #assign each transaction a strategy
+    strat_assign=best_gmm.predict(strategy_df)
+    
+    #attach back to data frame
+    test['Strategy Number']=strat_assign
+    
+#TEST THIS  
     #batches
     chunk_size = math.floor(test.shape[0]/3) #3 transaction strategies
     chunk_size
     all_batches = []
-    for t, B_t in test.groupby(np.arange(len(test)) // chunk_size):
+    for t, B_t in test.groupby('Strategy Number'):
         #B_t['batch_num'] = t
         #check for fraud transactions
         if (sum(B_t['FRD_IND']) != 0):
