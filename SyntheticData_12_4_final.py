@@ -14,7 +14,7 @@ from imblearn.over_sampling import SMOTE
 from sklearn.metrics import confusion_matrix
 from sklearn import metrics
 from sklearn.metrics import roc_curve, auc, roc_auc_score
-import statsmodels.api as sm #package for logistic regression
+#import statsmodels.api as sm #package for logistic regression
 import matplotlib.pyplot as plt
 from itertools import cycle
 from sklearn import mixture
@@ -42,6 +42,8 @@ df1['POS_ENTRY_MTHD_CD'] = df1['POS_ENTRY_MTHD_CD'].astype('category')
 
 #only select needed columns
 t_ind = [2, 7, 14, 18, 30, 44, 57, 58, 68]
+
+
 
 
 #cols = pd.DataFrame(j.iloc[:,t_ind])
@@ -134,7 +136,7 @@ for i in folds:
     prob_col_list=['index1','prob_0','prob_1','index2','truth_val','index3','pred_truth_val']
     prob_df.columns=prob_col_list
     prob_df=prob_df.drop(['index1','index2','index3'],axis=1)
-    path='/Documents/Graduate School/Fall 2016/Capstone/code/' #set path
+    path='/Users/frankiezeager/Documents/Graduate School/Capstone/code' #set path
     prob_df.to_csv(path+'both_learn_coverage_'+str(iteration_num)+'.csv')
 ###############################################################################
 
@@ -148,7 +150,7 @@ for i in folds:
     AUC_list.append(roc_auc_score(test['FRD_IND'],mod_test ))
 
 #########Gaussian Mixture Model to Determine Strategies#############
- 
+
     #subset df to include only pertinent (adversarial-controlled) continuous vars
     strat_ind = [18,53,68,7,23]
     strategy_df= pd.DataFrame(test.iloc[:,strat_ind])
@@ -171,17 +173,15 @@ for i in folds:
                 print("current GMM is: ",gmm)
                 best_gmm = gmm
     print("The optimal GMM is", best_gmm)
-    
+
     #assign each transaction a strategy
     strat_assign=best_gmm.predict(strategy_df)
-    
+
     #attach back to data frame
     test['Strategy Number']=strat_assign
-    
-#TEST THIS  
+
+
     #batches
-    chunk_size = math.floor(test.shape[0]/3) #3 transaction strategies
-    chunk_size
     all_batches = []
     for t, B_t in test.groupby('Strategy Number'):
         #B_t['batch_num'] = t
@@ -192,7 +192,9 @@ for i in folds:
     fn_rate = []
     for j in all_batches:
         cols=j.iloc[:,:-1]
+        #cols=cols.iloc[:,:-1]
         col_response = j.iloc[:,-1]
+        ###############################ERROR: #too many columns#########
         pred = mod.predict(cols)
         cm = confusion_matrix(col_response, pred)
         FNR = cm[0][1]
