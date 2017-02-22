@@ -1,4 +1,8 @@
-# coding: utf-8
+# -*- coding: utf-8 -*-
+
+
+#first filtering by Merchant Category Code and then associating each of the GMMs with a particular code
+#do this for several of the codes
 
 # Generation of new fraudulent transactions
 
@@ -22,11 +26,14 @@ from mpl_toolkits.mplot3d import Axes3D
 import itertools
 from scipy import linalg
 import matplotlib as mpl
+from sklearn.mixture import GaussianMixture
+from numpy import linspace,hstack
+from pylab import plot,show,hist
 
 
 
 colnames = ['AUTH_ID','ACCT_ID_TOKEN','FRD_IND','ACCT_ACTVN_DT','ACCT_AVL_CASH_BEFORE_AMT','ACCT_AVL_MONEY_BEFORE_AMT','ACCT_CL_AMT','ACCT_CURR_BAL','ACCT_MULTICARD_IND','ACCT_OPEN_DT','ACCT_PROD_CD','ACCT_TYPE_CD','ADR_VFCN_FRMT_CD','ADR_VFCN_RESPNS_CD','APPRD_AUTHZN_CNT','APPRD_CASH_AUTHZN_CNT','ARQC_RSLT_CD','AUTHZN_ACCT_STAT_CD','AUTHZN_AMT','AUTHZN_CATG_CD','AUTHZN_CHAR_CD','AUTHZN_OPSET_ID','AUTHZN_ORIG_SRC_ID','AUTHZN_OUTSTD_AMT','AUTHZN_OUTSTD_CASH_AMT','AUTHZN_RQST_PROC_CD','AUTHZN_RQST_PROC_DT','AUTHZN_RQST_PROC_TM','AUTHZN_RQST_TYPE_CD','AUTHZN_TRMNL_PIN_CAPBLT_NUM','AVG_DLY_AUTHZN_AMT','CARD_VFCN_2_RESPNS_CD','CARD_VFCN_2_VLDTN_DUR','CARD_VFCN_MSMT_REAS_CD','CARD_VFCN_PRESNC_CD','CARD_VFCN_RESPNS_CD','CARD_VFCN2_VLDTN_CD','CDHLDR_PRES_CD','CRCY_CNVRSN_RT','ELCTR_CMRC_IND_CD','HOME_PHN_NUM_CHNG_DUR','HOTEL_STAY_CAR_RENTL_DUR','LAST_ADR_CHNG_DUR','LAST_PLSTC_RQST_REAS_CD','MRCH_CATG_CD','MRCH_CNTRY_CD','NEW_USER_ADDED_DUR','PHN_CHNG_SNC_APPN_IND','PIN_BLK_CD','PIN_VLDTN_IND','PLSTC_ACTVN_DT','PLSTC_ACTVN_REQD_IND','PLSTC_FRST_USE_TS','PLSTC_ISU_DUR','PLSTC_PREV_CURR_CD','PLSTC_RQST_TS','POS_COND_CD','POS_ENTRY_MTHD_CD','RCURG_AUTHZN_IND','RVRSL_IND','SENDR_RSIDNL_CNTRY_CD','SRC_CRCY_CD','SRC_CRCY_DCML_PSN_NUM','TRMNL_ATTNDNC_CD','TRMNL_CAPBLT_CD','TRMNL_CLASFN_CD','TRMNL_ID','TRMNL_PIN_CAPBLT_CD','DISTANCE_FROM_HOME']
-df = pd.read_csv('/Users/frankiezeager/Documents/Graduate School/Capstone/training_part_10_of_10.txt', delimiter='|',header=None, names=colnames)
+df = pd.read_csv('/Users/Aksheetha/Documents/MSDS/capstone_research/training_part_10_of_10.txt', delimiter='|',header=None, names=colnames)
 df1 = df.sample(n=1000000)
 df1.dtypes
 
@@ -41,14 +48,63 @@ df1['MRCH_CATG_CD'] = df1['MRCH_CATG_CD'].astype('category')
 df1['POS_ENTRY_MTHD_CD'] = df1['POS_ENTRY_MTHD_CD'].astype('category')
 
 #only select needed columns
-t_ind = [2, 7, 14, 18, 30, 44, 57, 58, 68]
-
-
-
+t_ind = [2, 7, 14, 18, 23, 30, 44, 53, 57, 58, 68]
 
 #cols = pd.DataFrame(j.iloc[:,t_ind])
 df1 = pd.DataFrame(df1.iloc[:,t_ind])
 
+#######################GMM TO SEGMENT CATEGORICAL ATTRIBUTES#########################
+df2 = df1
+strat_df = df2.sample(166667)
+strat_ind = [1, 3, 4, 7, 10] 
+strategy_df= pd.DataFrame(strat_df.iloc[:,strat_ind]) 
+
+sr_df = strategy_df.sample(10000)
+str_arr = sr_df.values
+str_id = str_arr.ravel() #converting from a 2d to a 1d array
+
+#rerun with str_arr
+lowest_bic = np.infty
+bic = []
+n_components_range = range(1, 7) #change this to 3 components instead
+cv_types = ['spherical', 'tied', 'diag', 'full']
+for cv_type in cv_types:
+    for n_components in n_components_range:
+        # Fit a Gaussian mixture with EM
+        gmm = mixture.GaussianMixture(n_components=n_components,
+                                      covariance_type=cv_type)
+        gmm.fit(str_arr)
+        bic.append(gmm.bic(str_arr))
+        if bic[-1] < lowest_bic:
+            lowest_bic = bic[-1]
+            print("current GMM is: ",gmm)
+            best_gmm = gmm
+print("The optimal GMM is", best_gmm)
+gmm_samp = best_gmm.sample(1000) #gmm sample
+
+#assign each transaction a strategy
+strat_assign=best_gmm.predict(strategy_df)
+strat_prob = best_gmm.predict_proba(strategy_df.values)
+
+strat_df['Strategy Number'] = strat_assign
+strat_df['Posterior Prob'] = strat_prob
+
+#divide the dataframe according to the strategy number and then take the corresponding level
+strat_0 = strat_df.loc[(strat_df['Strategy Number'] == 0), ['MRCH_CATG_CD']].drop_duplicates()
+strat_1 = strat_df.loc[strat_df['Strategy Number'] == 1, ['MRCH_CATG_CD']].drop_duplicates()
+strat_2 = strat_df.loc[strat_df['Strategy Number'] == 2, ['MRCH_CATG_CD']].drop_duplicates()
+strat_3 = strat_df.loc[strat_df['Strategy Number'] == 3, ['MRCH_CATG_CD']].drop_duplicates()
+strat_4 = strat_df.loc[strat_df['Strategy Number'] == 4, ['MRCH_CATG_CD']].drop_duplicates()
+strat_5 = strat_df.loc[strat_df['Strategy Number'] == 5, ['MRCH_CATG_CD']].drop_duplicates()
+
+#Plotting the 1D GMM
+xpdf = np.linspace(-5000, 5000, 1000)
+xpdf = xpdf.reshape(-1, 5)
+density = np.exp(best_gmm.score_samples(str_arr))
+plt.hist(str_arr, 80, normed=True, alpha=0.5)
+plt.plot(str_arr, density, '-r')
+plt.xlim(-5000, 5000)
+######################################################################################################################
 
 df1_MRCHCODE = pd.get_dummies(df1['MRCH_CATG_CD']) #converting to dummy variables
 df1_POSENTRY = pd.get_dummies(df1['POS_ENTRY_MTHD_CD']) #converting to dummy variables
@@ -136,7 +192,7 @@ for i in folds:
     prob_col_list=['index1','prob_0','prob_1','index2','truth_val','index3','pred_truth_val']
     prob_df.columns=prob_col_list
     prob_df=prob_df.drop(['index1','index2','index3'],axis=1)
-    path='/Users/frankiezeager/Documents/Graduate School/Capstone/code' #set path
+    path='/Users/Aksheetha/Documents/MSDS/capstone_research/code' #set path
     prob_df.to_csv(path+'both_learn_coverage_'+str(iteration_num)+'.csv')
 ###############################################################################
 
@@ -152,8 +208,9 @@ for i in folds:
 #########Gaussian Mixture Model to Determine Strategies#############
 
     #subset df to include only pertinent (adversarial-controlled) continuous vars
-    strat_ind = [18,53,68,7,23]
-    strategy_df= pd.DataFrame(test.iloc[:,strat_ind])
+    strat_ind = [0, 2, 3, 5, 6]
+    #strat_ind = [18,53,68,7,23] 
+    strategy_df= pd.DataFrame(test.iloc[:,strat_ind]) #incorrect subsetting of dataframe, did not include these in the original df!!!
 
 
     #find best number of strategies:
@@ -178,10 +235,8 @@ for i in folds:
     strat_assign=best_gmm.predict(strategy_df)
 
     #attach back to data frame
-    test['Strategy Number']=strat_assign
-
-
-    #batches
+    test['Strategy Number'] = strat_assign
+              
     all_batches = []
     for t, B_t in test.groupby('Strategy Number'):
         #B_t['batch_num'] = t
@@ -191,9 +246,11 @@ for i in folds:
 
     fn_rate = []
     for j in all_batches:
-        cols=j.iloc[:,:-1]
+        #cols=j.drop(j.columns[-1:-3], axis=1) 
+        cols = j.drop(j.columns[[529, 530]], axis=1)
+        #cols=j.iloc[:,:-1] 
         #cols=cols.iloc[:,:-1]
-        col_response = j.iloc[:,-1]
+        col_response = j.iloc[:,-2]
         ###############################ERROR: #too many columns#########
         pred = mod.predict(cols)
         cm = confusion_matrix(col_response, pred)
@@ -206,7 +263,7 @@ for i in folds:
 
     #Implement SMOTE
     #test_cols = test.drop("Class", axis = 1)
-    test_cols = best_fold.drop('FRD_IND',axis=1)
+    test_cols = best_fold.drop(best_fold.columns[[529, 530]],axis=1)
     #test_cols = test_cols.values
     smote = SMOTE(ratio=0.5, kind='regular')
     smox, smoy = smote.fit_sample(test_cols, best_fold.FRD_IND)
@@ -296,3 +353,5 @@ plt.ylabel('True Positive Rate')
 plt.title('ROC Test')
 plt.legend(loc="lower right")
 plt.show()
+
+

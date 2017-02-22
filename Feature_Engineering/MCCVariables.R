@@ -68,21 +68,26 @@ quarter.amount <- aggregate(data.frame(avg_amount = fuel_agg$AUTHZN_AMT), list(m
 # Electronic Sales: 5732
 
 #################ROLLING WINDOW CALCULATIONS##################
-df3 <- subset(df, select=c('V27','V19', 'V45'))
-colnames(df3) <- c('AUTHZN_RQST_PROC_DT', 'AUTHZN_AMT', 'MRCH_CATG_CD')
+df3 <- subset(df, select=c('V27', 'V2', 'V19', 'V45'))
+colnames(df3) <- c('AUTHZN_RQST_PROC_DT', 'ACCT_ID_TOKEN', 'AUTHZN_AMT', 'MRCH_CATG_CD') #need to add the Account ID Token 
 df3$AUTHZN_RQST_PROC_DT <- as.Date(df3$AUTHZN_RQST_PROC_DT) #convert the character to a date
-setkey(df3, "AUTHZN_RQST_PROC_DT", "MRCH_CATG_CD")
+#setkey(df3, "AUTHZN_RQST_PROC_DT", "MRCH_CATG_CD")
 
-#Number merchant type ovet month - Total number of transactions with same merchant during past 30 days
-daily_merch_freq <- df3[,lapply(.SD,length),by=list(AUTHZN_RQST_PROC_DT, MRCH_CATG_CD)]
+df4 <- df3
 
-daily_merch_freq[, Roll.Tot.Amt := roll_sumr(AUTHZN_AMT, 30), by=MRCH_CATG_CD]
+#Number merchant type over month - Total number of transactions with same merchant during past 30 days
+#daily_merch_freq <- df3[,lapply(.SD,length),by=list(AUTHZN_RQST_PROC_DT, MRCH_CATG_CD)]
 
+#daily_merch_freq[, Roll.Tot.Amt := roll_sumr(AUTHZN_AMT, 30), by=list(ACCT_ID_TOKEN, MRCH_CATG_CD)]
+
+#try using zoo package
+
+df4[, Roll.Tot.Amt := roll_meanr(AUTHZN_AMT, 30, partial=TRUE), by=c('ACCT_ID_TOKEN', 'MRCH_CATG_CD')]
 
 #Amount merchant type over month - Average amount per day spent over a 30 day period on all transactions up to this one on the same merchant type as this transaction
 daily_avg_amt <- df3[,lapply(.SD,sum),by=list(AUTHZN_RQST_PROC_DT, MRCH_CATG_CD)]
 
-daily_avg_amt[, Roll.Avg.Amt := roll_meanr(AUTHZN_AMT, 30), by=MRCH_CATG_CD]
+daily_avg_amt[, Roll.Avg.Amt := roll_meanr(AUTHZN_AMT, 30), by=list(ACCT_ID_TOKEN, MRCH_CATG_CD)]
 
 
 ####Next steps
@@ -91,24 +96,3 @@ daily_avg_amt[, Roll.Avg.Amt := roll_meanr(AUTHZN_AMT, 30), by=MRCH_CATG_CD]
 #try to create variables looking at the timestamp of the authorization request (column V28, AUTHZN_RQST_PROC_TM)
 #look at country code of merchant (http://www.web-merchant.co.uk/select/countries.html)
 #category type of authorization (AUTHZN_CATG_CD)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
