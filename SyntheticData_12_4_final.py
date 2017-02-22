@@ -216,7 +216,7 @@ for i in folds:
     #find best number of strategies:
     lowest_bic = np.infty
     bic = []
-    n_components_range = range(1, 7)
+    n_components_range = range(1, 4)
     cv_types = ['spherical', 'tied', 'diag', 'full']
     for cv_type in cv_types:
         for n_components in n_components_range:
