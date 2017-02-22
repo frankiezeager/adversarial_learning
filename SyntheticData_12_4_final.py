@@ -53,59 +53,6 @@ t_ind = [2, 7, 14, 18, 23, 30, 44, 53, 57, 58, 68]
 #cols = pd.DataFrame(j.iloc[:,t_ind])
 df1 = pd.DataFrame(df1.iloc[:,t_ind])
 
-#######################GMM TO SEGMENT CATEGORICAL ATTRIBUTES#########################
-df2 = df1
-strat_df = df2.sample(166667)
-strat_ind = [1, 3, 4, 7, 10] 
-strategy_df= pd.DataFrame(strat_df.iloc[:,strat_ind]) 
-
-sr_df = strategy_df.sample(10000)
-str_arr = sr_df.values
-str_id = str_arr.ravel() #converting from a 2d to a 1d array
-
-#rerun with str_arr
-lowest_bic = np.infty
-bic = []
-n_components_range = range(1, 7) #change this to 3 components instead
-cv_types = ['spherical', 'tied', 'diag', 'full']
-for cv_type in cv_types:
-    for n_components in n_components_range:
-        # Fit a Gaussian mixture with EM
-        gmm = mixture.GaussianMixture(n_components=n_components,
-                                      covariance_type=cv_type)
-        gmm.fit(str_arr)
-        bic.append(gmm.bic(str_arr))
-        if bic[-1] < lowest_bic:
-            lowest_bic = bic[-1]
-            print("current GMM is: ",gmm)
-            best_gmm = gmm
-print("The optimal GMM is", best_gmm)
-gmm_samp = best_gmm.sample(1000) #gmm sample
-
-#assign each transaction a strategy
-strat_assign=best_gmm.predict(strategy_df)
-strat_prob = best_gmm.predict_proba(strategy_df.values)
-
-strat_df['Strategy Number'] = strat_assign
-strat_df['Posterior Prob'] = strat_prob
-
-#divide the dataframe according to the strategy number and then take the corresponding level
-strat_0 = strat_df.loc[(strat_df['Strategy Number'] == 0), ['MRCH_CATG_CD']].drop_duplicates()
-strat_1 = strat_df.loc[strat_df['Strategy Number'] == 1, ['MRCH_CATG_CD']].drop_duplicates()
-strat_2 = strat_df.loc[strat_df['Strategy Number'] == 2, ['MRCH_CATG_CD']].drop_duplicates()
-strat_3 = strat_df.loc[strat_df['Strategy Number'] == 3, ['MRCH_CATG_CD']].drop_duplicates()
-strat_4 = strat_df.loc[strat_df['Strategy Number'] == 4, ['MRCH_CATG_CD']].drop_duplicates()
-strat_5 = strat_df.loc[strat_df['Strategy Number'] == 5, ['MRCH_CATG_CD']].drop_duplicates()
-
-#Plotting the 1D GMM
-xpdf = np.linspace(-5000, 5000, 1000)
-xpdf = xpdf.reshape(-1, 5)
-density = np.exp(best_gmm.score_samples(str_arr))
-plt.hist(str_arr, 80, normed=True, alpha=0.5)
-plt.plot(str_arr, density, '-r')
-plt.xlim(-5000, 5000)
-######################################################################################################################
-
 df1_MRCHCODE = pd.get_dummies(df1['MRCH_CATG_CD']) #converting to dummy variables
 df1_POSENTRY = pd.get_dummies(df1['POS_ENTRY_MTHD_CD']) #converting to dummy variables
 
