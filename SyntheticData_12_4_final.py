@@ -111,7 +111,6 @@ all_fold_oot=[]
 
 for i in folds:
     fold_loc = i
-    #creates train 40%, test 40%, out_of_time 20%
     train, test, out_of_time = np.split(fold_loc.sample(frac=1), [int(.4*len(fold_loc)), int(.8*len(fold_loc))])
     
     all_fold_oot.append(out_of_time)
@@ -190,7 +189,8 @@ for i in folds:
     fn_rate = []
     for j in all_batches:
         #cols=j.drop(j.columns[-1:-3], axis=1) 
-        cols = j.drop(j.columns[[529, 530]], axis=1)
+        cols = j.drop(labels='Strategy Number',axis=1)
+        cols = cols.drop(labels='FRD_IND',axis=1)
         #cols=j.iloc[:,:-1] 
         #cols=cols.iloc[:,:-1]
         col_response = j.iloc[:,-2]
@@ -206,8 +206,9 @@ for i in folds:
 
     #Implement SMOTE
     #test_cols = test.drop("Class", axis = 1)
-    test_cols = best_fold.drop(best_fold.columns[[529, 530]],axis=1)
-    #Finds number of transactions needed to make next fold specific fraud ratio
+    test_cols = best_fold.drop(labels='Strategy Number',axis=1)
+    test_cols = test_cols.drop(labels='FRD_IND',axis=1)
+    #test_cols = test_cols.values
     if (iteration_num+1)<len(folds):
         fraud_next_fold=sum(folds[iteration_num+1].FRD_IND==1)
         new_fraud_fold=fold_size*.002 #specified next fold fraud ratio
@@ -226,7 +227,6 @@ for i in folds:
     fraud_trans = syntheticdata[syntheticdata.iloc[:,-1] == 1]
     #append the fraud transactions to fold+1
     if (iteration_num+1)<len(folds):
-        #intoduce synthetic fraud to make ratio 0.002
         fraud_trans = fraud_trans.sample(n=fraud_needed)
         folds[iteration_num+1]=pd.concat([folds[iteration_num+1], fraud_trans], axis=0)
         iteration_num = iteration_num+ 1
@@ -244,7 +244,7 @@ for i in folds:
 #plt.show()
 
 
-#having three out-of-time sets
+#having three out-of-time sets from synthetic data
 i_num = 1
 for l, color, z in zip(all_fold_oot, colors, model_list):
     syntheticdata_test=l.drop('FRD_IND',axis=1)
@@ -302,4 +302,3 @@ plt.ylabel('True Positive Rate')
 plt.title('ROC Test')
 plt.legend(loc="lower right")
 plt.show()
-
