@@ -205,6 +205,10 @@ for i in folds:
     #test_cols = test.drop("Class", axis = 1)
     test_cols = best_fold.drop(best_fold.columns[[529, 530]],axis=1)
     #test_cols = test_cols.values
+    if (iteration_num+1)<len(folds):
+        fraud_next_fold=sum(folds[iteration_num+1].FRD_IND==1)
+        new_fraud_fold=fold_size*.002 #specified next fold fraud ratio
+        fraud_needed=math.ceil(new_fraud_fold-fraud_next_fold)
     smote = SMOTE(ratio=0.5, kind='regular')
     smox, smoy = smote.fit_sample(test_cols, best_fold.FRD_IND)
     smox = pd.DataFrame(smox)
@@ -219,6 +223,7 @@ for i in folds:
     fraud_trans = syntheticdata[syntheticdata.iloc[:,-1] == 1]
     #append the fraud transactions to fold+1
     if (iteration_num+1)<len(folds):
+        fraud_trans = fraud_trans.sample(n=fraud_needed)
         folds[iteration_num+1]=pd.concat([folds[iteration_num+1], fraud_trans], axis=0)
         iteration_num = iteration_num+ 1
         print(iteration_num)
