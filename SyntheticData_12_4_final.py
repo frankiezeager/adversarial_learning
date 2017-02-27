@@ -29,16 +29,16 @@ import matplotlib as mpl
 from sklearn.mixture import GaussianMixture
 from numpy import linspace,hstack
 from pylab import plot,show,hist
-import boto3
+#import boto3
 
 
 colnames = ['AUTH_ID','ACCT_ID_TOKEN','FRD_IND','ACCT_ACTVN_DT','ACCT_AVL_CASH_BEFORE_AMT','ACCT_AVL_MONEY_BEFORE_AMT','ACCT_CL_AMT','ACCT_CURR_BAL','ACCT_MULTICARD_IND','ACCT_OPEN_DT','ACCT_PROD_CD','ACCT_TYPE_CD','ADR_VFCN_FRMT_CD','ADR_VFCN_RESPNS_CD','APPRD_AUTHZN_CNT','APPRD_CASH_AUTHZN_CNT','ARQC_RSLT_CD','AUTHZN_ACCT_STAT_CD','AUTHZN_AMT','AUTHZN_CATG_CD','AUTHZN_CHAR_CD','AUTHZN_OPSET_ID','AUTHZN_ORIG_SRC_ID','AUTHZN_OUTSTD_AMT','AUTHZN_OUTSTD_CASH_AMT','AUTHZN_RQST_PROC_CD','AUTHZN_RQST_PROC_DT','AUTHZN_RQST_PROC_TM','AUTHZN_RQST_TYPE_CD','AUTHZN_TRMNL_PIN_CAPBLT_NUM','AVG_DLY_AUTHZN_AMT','CARD_VFCN_2_RESPNS_CD','CARD_VFCN_2_VLDTN_DUR','CARD_VFCN_MSMT_REAS_CD','CARD_VFCN_PRESNC_CD','CARD_VFCN_RESPNS_CD','CARD_VFCN2_VLDTN_CD','CDHLDR_PRES_CD','CRCY_CNVRSN_RT','ELCTR_CMRC_IND_CD','HOME_PHN_NUM_CHNG_DUR','HOTEL_STAY_CAR_RENTL_DUR','LAST_ADR_CHNG_DUR','LAST_PLSTC_RQST_REAS_CD','MRCH_CATG_CD','MRCH_CNTRY_CD','NEW_USER_ADDED_DUR','PHN_CHNG_SNC_APPN_IND','PIN_BLK_CD','PIN_VLDTN_IND','PLSTC_ACTVN_DT','PLSTC_ACTVN_REQD_IND','PLSTC_FRST_USE_TS','PLSTC_ISU_DUR','PLSTC_PREV_CURR_CD','PLSTC_RQST_TS','POS_COND_CD','POS_ENTRY_MTHD_CD','RCURG_AUTHZN_IND','RVRSL_IND','SENDR_RSIDNL_CNTRY_CD','SRC_CRCY_CD','SRC_CRCY_DCML_PSN_NUM','TRMNL_ATTNDNC_CD','TRMNL_CAPBLT_CD','TRMNL_CLASFN_CD','TRMNL_ID','TRMNL_PIN_CAPBLT_CD','DISTANCE_FROM_HOME']
-df = pd.read_csv('/Users/frankiezeager/Documents/Graduate School/Capstone/training_part_10_of_10.txt', delimiter='|',header=None, names=colnames)
-
+df = pd.read_csv('/Users/nathanfogal/Downloads/training_part_10_of_10.txt', delimiter='|',header=None, names=colnames)
+df1 = df.sample(n=2000000)
 ####### FOR AWS #########
 #read data from s3
-s3=boto3.client('s3')
-obj=s3.get_object(Bucket='')
+#s3=boto3.client('s3')
+#obj=s3.get_object(Bucket='')
 #combine together
 
 #first sort everything by date
@@ -87,7 +87,7 @@ df1['FRD_IND']=fraud_list
 col_list=df1.columns.values.tolist()
 
 #creation of folds
-fold_size = math.floor(df1.shape[0]/3)
+fold_size = math.floor(df1.shape[0]/5)
 folds = []
 for f, F_t in df1.groupby(np.arange(len(df1)) // fold_size):
     if (len(F_t)==fold_size):
@@ -107,11 +107,13 @@ colors = cycle(['cyan', 'indigo', 'seagreen'])
 lw = 2
 
 allsynthetic_sets = []
-
+all_fold_oot=[]
 
 for i in folds:
     fold_loc = i
-    train, test = train_test_split(fold_loc, train_size = 0.5)
+    train, test, out_of_time = np.split(fold_loc.sample(frac=1), [int(.4*len(fold_loc)), int(.8*len(fold_loc))])
+    
+    all_fold_oot.append(out_of_time)
     test = test.sort_values(['AUTHZN_AMT']) #sorting by transaction amount
 #training the classifier
 #7-ACCT_CUR_BAL
@@ -143,7 +145,7 @@ for i in folds:
     prob_col_list=['index1','prob_0','prob_1','index2','truth_val','index3','pred_truth_val']
     prob_df.columns=prob_col_list
     prob_df=prob_df.drop(['index1','index2','index3'],axis=1)
-    path='/Users/frankiezeager/Documents/Graduate School/Capstone/' #set path
+    path='/Users/nathanfogal/Desktop' #set path
     prob_df.to_csv(path+'both_learn_coverage_'+str(iteration_num)+'.csv')
 ###############################################################################
 
@@ -242,7 +244,7 @@ for i in folds:
 
 #having three out-of-time sets from synthetic data
 i_num = 1
-for l, color, z in zip(allsynthetic_sets, colors, model_list):
+for l, color, z in zip(all_fold_oot, colors, model_list):
     syntheticdata_test=l.drop('FRD_IND',axis=1)
     #mod_test2 = z.predict(syntheticdata_test)
     mod_test3 = z.predict_proba(syntheticdata_test)[:,1]
@@ -272,7 +274,7 @@ plt.show()
 ############################################ MODEL STAYS THE SAME #######################################
 firstmod = model_list[0] #original model
 i_num = 1
-for l, color in zip(allsynthetic_sets, colors):
+for l, color in zip(all_fold_oot, colors):
     syntheticdata_test=l.drop('FRD_IND',axis=1)
     #mod_test2 = z.predict(syntheticdata_test)
     mod_test3 = firstmod.predict_proba(syntheticdata_test)[:,1]
@@ -298,5 +300,4 @@ plt.ylabel('True Positive Rate')
 plt.title('ROC Test')
 plt.legend(loc="lower right")
 plt.show()
-
 
