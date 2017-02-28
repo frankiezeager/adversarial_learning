@@ -28,12 +28,13 @@ from scipy import linalg
 import matplotlib as mpl
 from sklearn.mixture import GaussianMixture
 from numpy import linspace,hstack
-from pylab import plot,show,hist
+from pylab import plot,show,hist,savefig
 #import boto3
 
 
 colnames = ['AUTH_ID','ACCT_ID_TOKEN','FRD_IND','ACCT_ACTVN_DT','ACCT_AVL_CASH_BEFORE_AMT','ACCT_AVL_MONEY_BEFORE_AMT','ACCT_CL_AMT','ACCT_CURR_BAL','ACCT_MULTICARD_IND','ACCT_OPEN_DT','ACCT_PROD_CD','ACCT_TYPE_CD','ADR_VFCN_FRMT_CD','ADR_VFCN_RESPNS_CD','APPRD_AUTHZN_CNT','APPRD_CASH_AUTHZN_CNT','ARQC_RSLT_CD','AUTHZN_ACCT_STAT_CD','AUTHZN_AMT','AUTHZN_CATG_CD','AUTHZN_CHAR_CD','AUTHZN_OPSET_ID','AUTHZN_ORIG_SRC_ID','AUTHZN_OUTSTD_AMT','AUTHZN_OUTSTD_CASH_AMT','AUTHZN_RQST_PROC_CD','AUTHZN_RQST_PROC_DT','AUTHZN_RQST_PROC_TM','AUTHZN_RQST_TYPE_CD','AUTHZN_TRMNL_PIN_CAPBLT_NUM','AVG_DLY_AUTHZN_AMT','CARD_VFCN_2_RESPNS_CD','CARD_VFCN_2_VLDTN_DUR','CARD_VFCN_MSMT_REAS_CD','CARD_VFCN_PRESNC_CD','CARD_VFCN_RESPNS_CD','CARD_VFCN2_VLDTN_CD','CDHLDR_PRES_CD','CRCY_CNVRSN_RT','ELCTR_CMRC_IND_CD','HOME_PHN_NUM_CHNG_DUR','HOTEL_STAY_CAR_RENTL_DUR','LAST_ADR_CHNG_DUR','LAST_PLSTC_RQST_REAS_CD','MRCH_CATG_CD','MRCH_CNTRY_CD','NEW_USER_ADDED_DUR','PHN_CHNG_SNC_APPN_IND','PIN_BLK_CD','PIN_VLDTN_IND','PLSTC_ACTVN_DT','PLSTC_ACTVN_REQD_IND','PLSTC_FRST_USE_TS','PLSTC_ISU_DUR','PLSTC_PREV_CURR_CD','PLSTC_RQST_TS','POS_COND_CD','POS_ENTRY_MTHD_CD','RCURG_AUTHZN_IND','RVRSL_IND','SENDR_RSIDNL_CNTRY_CD','SRC_CRCY_CD','SRC_CRCY_DCML_PSN_NUM','TRMNL_ATTNDNC_CD','TRMNL_CAPBLT_CD','TRMNL_CLASFN_CD','TRMNL_ID','TRMNL_PIN_CAPBLT_CD','DISTANCE_FROM_HOME']
-#df = pd.read_csv('/Users/nathanfogal/Downloads/training_part_10_of_10.txt', delimiter='|',header=None, names=colnames)
+
+#df = pd.read_csv('/Users/frankiezeager/Documents/Graduate School/Capstone/code/training_part_10_of_10.txt', delimiter='|',header=None, names=colnames)
 #df1 = df.sample(n=1000000)
 
 #read from EC2 instance memory
@@ -152,7 +153,7 @@ for i in folds:
     prob_col_list=['index1','prob_0','prob_1','index2','truth_val','index3','pred_truth_val']
     prob_df.columns=prob_col_list
     prob_df=prob_df.drop(['index1','index2','index3'],axis=1)
-    path='/Users/nathanfogal/Desktop' #set path
+    path='/Users/frankiezeager/Desktop' #set path
     prob_df.to_csv(path+'both_learn_coverage_'+str(iteration_num)+'.csv')
 ###############################################################################
 
@@ -269,7 +270,7 @@ for l, color, z in zip(all_fold_oot, colors, model_list):
     aucscore = auc(fpr, tpr )
     plt.plot(fpr, tpr, lw=lw, color=color, label='ROC fold %d (area = %0.2f)' % (i_num, aucscore))
     i_num += 1
-
+    
 #adding ROC curve code
 plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
 plt.xlim([-0.05, 1.05])
@@ -279,6 +280,8 @@ plt.ylabel('True Positive Rate')
 plt.title('ROC Test')
 plt.legend(loc="lower right")
 plt.show()
+savefig('~/adversarial_learning/out_of_time_roc.png',bbox_inches='tight')
+
 
 ############################################ MODEL STAYS THE SAME #######################################
 firstmod = model_list[0] #original model
@@ -309,3 +312,5 @@ plt.ylabel('True Positive Rate')
 plt.title('ROC Test')
 plt.legend(loc="lower right")
 plt.show()
+savefig('~/adversarial_learning/roc_curves.png',bbox_inches='tight')
+
