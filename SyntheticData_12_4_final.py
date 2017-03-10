@@ -1,11 +1,5 @@
 # -*- coding: utf-8 -*-
 
-
-#first filtering by Merchant Category Code and then associating each of the GMMs with a particular code
-#do this for several of the codes
-
-# Generation of new fraudulent transactions
-
 import pandas as pd
 import numpy as np
 import math
@@ -29,7 +23,7 @@ import matplotlib as mpl
 from sklearn.mixture import GaussianMixture
 from numpy import linspace,hstack
 from pylab import plot,show,hist,savefig
-#import boto3
+import os
 
 
 colnames = ['AUTH_ID','ACCT_ID_TOKEN','FRD_IND','ACCT_ACTVN_DT','ACCT_AVL_CASH_BEFORE_AMT','ACCT_AVL_MONEY_BEFORE_AMT','ACCT_CL_AMT','ACCT_CURR_BAL','ACCT_MULTICARD_IND','ACCT_OPEN_DT','ACCT_PROD_CD','ACCT_TYPE_CD','ADR_VFCN_FRMT_CD','ADR_VFCN_RESPNS_CD','APPRD_AUTHZN_CNT','APPRD_CASH_AUTHZN_CNT','ARQC_RSLT_CD','AUTHZN_ACCT_STAT_CD','AUTHZN_AMT','AUTHZN_CATG_CD','AUTHZN_CHAR_CD','AUTHZN_OPSET_ID','AUTHZN_ORIG_SRC_ID','AUTHZN_OUTSTD_AMT','AUTHZN_OUTSTD_CASH_AMT','AUTHZN_RQST_PROC_CD','AUTHZN_RQST_PROC_DT','AUTHZN_RQST_PROC_TM','AUTHZN_RQST_TYPE_CD','AUTHZN_TRMNL_PIN_CAPBLT_NUM','AVG_DLY_AUTHZN_AMT','CARD_VFCN_2_RESPNS_CD','CARD_VFCN_2_VLDTN_DUR','CARD_VFCN_MSMT_REAS_CD','CARD_VFCN_PRESNC_CD','CARD_VFCN_RESPNS_CD','CARD_VFCN2_VLDTN_CD','CDHLDR_PRES_CD','CRCY_CNVRSN_RT','ELCTR_CMRC_IND_CD','HOME_PHN_NUM_CHNG_DUR','HOTEL_STAY_CAR_RENTL_DUR','LAST_ADR_CHNG_DUR','LAST_PLSTC_RQST_REAS_CD','MRCH_CATG_CD','MRCH_CNTRY_CD','NEW_USER_ADDED_DUR','PHN_CHNG_SNC_APPN_IND','PIN_BLK_CD','PIN_VLDTN_IND','PLSTC_ACTVN_DT','PLSTC_ACTVN_REQD_IND','PLSTC_FRST_USE_TS','PLSTC_ISU_DUR','PLSTC_PREV_CURR_CD','PLSTC_RQST_TS','POS_COND_CD','POS_ENTRY_MTHD_CD','RCURG_AUTHZN_IND','RVRSL_IND','SENDR_RSIDNL_CNTRY_CD','SRC_CRCY_CD','SRC_CRCY_DCML_PSN_NUM','TRMNL_ATTNDNC_CD','TRMNL_CAPBLT_CD','TRMNL_CLASFN_CD','TRMNL_ID','TRMNL_PIN_CAPBLT_CD','DISTANCE_FROM_HOME']
@@ -46,8 +40,38 @@ for i in range(1,11):
     name=pd.read_csv(full_path, delimiter='|',header=None, names=colnames)
     files.append(name)
 
+
+#function to append multiple files
+def main():
+    block_size = 1024 * 1024 #setting a buffer size to read file in segments
+
+    if hasattr(os, 'O_BINARY'):
+        o_binary = getattr(os, 'O_BINARY') #opens files in binary output
+    else:
+        o_binary = 0
+    output_file = os.open('~/adversarial_learning/output-file', os.O_WRONLY | o_binary) #open for writing only
+    for file in files:
+        input_file = os.open(file, os.O_RDONLY | o_binary) #open for reading only
+        while True:
+            input_block = os.read(input_file, block_size)
+            if not input_block:
+                break
+            os.write(output_file, input_block)
+        os.close(input_file)
+    os.close(output_file)
+
+main()
+
+#or take each of the the files and convert into one massive hdf5 file
+    
+#open the output file and store as pandas dataframe
+#HDF5 (pytables) method to access large objects
+
+filename = '~/adversarial_learning/temp.hdf5'
+
+
 #create one file from all the training instances
-df1=pd.concat(files)
+#df1=pd.concat(files)
 
 #first sort everything by date
 df1 = df1.sort_values(['AUTHZN_RQST_PROC_DT'])
@@ -169,9 +193,8 @@ for i in folds:
 #########Gaussian Mixture Model to Determine Strategies#############
 
     #subset df to include only pertinent (adversarial-controlled) continuous vars
-    strat_ind = [0, 2, 3, 5, 6]
-    #strat_ind = [18,53,68,7,23] 
-    strategy_df= pd.DataFrame(test.iloc[:,strat_ind]) #incorrect subsetting of dataframe, did not include these in the original df!!!
+    strat_ind = [0, 2, 3, 5, 6] 
+    strategy_df= pd.DataFrame(test.iloc[:,strat_ind]) 
 
 
     #find best number of strategies:
@@ -202,7 +225,6 @@ for i in folds:
         #cols=j.iloc[:,:-1] 
         #cols=cols.iloc[:,:-1]
         col_response = j.iloc[:,-2]
-        ###############################ERROR: #too many columns#########
         pred = mod.predict(cols)
         cm = confusion_matrix(col_response, pred)
         FNR = cm[0][1]
