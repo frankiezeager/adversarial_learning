@@ -4,6 +4,8 @@ library(RcppRoll)
 library(zoo)
 library(lubridate)
 library(data.table)
+library(dplyr)
+library(plyr)
 
 df <- fread('training_part_10_of_10.txt')
 df1 <- subset(df, select=c('V27', 'V2', 'V19', 'V45'))
@@ -18,6 +20,22 @@ df2$AUTHZN_RQST_PROC_DT <- as.Date(df2$AUTHZN_RQST_PROC_DT) #convert the charact
 df2$AUTHZN_RQST_PROC_DT <- sort(df2$AUTHZN_RQST_PROC_DT, decreasing = FALSE) #sorting the date column in ascending fashion
 
 merchant_category_code <- unique(df2$MRCH_CATG_CD) #getting the unique merchant category codes, ex: 5542
+
+#calculate probability of fraud by MCC
+#processing data frame
+percent_fraud <- ddply(df2, )
+
+
+
+
+
+
+
+
+
+
+
+
 
 fuel_code <- df2[df2$MRCH_CATG_CD == "5542"] #looking for 5542 (Gas stations)
 
@@ -96,3 +114,6 @@ daily_avg_amt[, Roll.Avg.Amt := roll_meanr(AUTHZN_AMT, 30), by=list(ACCT_ID_TOKE
 #try to create variables looking at the timestamp of the authorization request (column V28, AUTHZN_RQST_PROC_TM)
 #look at country code of merchant (http://www.web-merchant.co.uk/select/countries.html)
 #category type of authorization (AUTHZN_CATG_CD)
+
+#get the means for these variables
+
