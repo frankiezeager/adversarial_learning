@@ -32,43 +32,31 @@ colnames = ['AUTH_ID','ACCT_ID_TOKEN','FRD_IND','ACCT_ACTVN_DT','ACCT_AVL_CASH_B
 #df1 = df.sample(n=1000000)
 
 #read from EC2 instance memory
-files=[]
-for i in range(1,11):
-    name='df_'+str(i)
+#files=[]
+#for i in range(1,11):
+#    name='df_'+str(i)
+#    file='training_part_0'+str(i)+'_of_10.txt'
+#    full_path='~/adversarial_learning/'+file
+#    name=pd.read_csv(full_path, delimiter='|',header=None, names=colnames)
+#    files.append(name)
+
+#reading from EC2 instance memory and appending files to hdf5 object
+homedir = os.path.expanduser(os.getenv('USERPROFILE'))
+filename = homedir + '/adversarial_learning/df.h5'
+#if using unix then use the filepath below
+#filename = '~/adversarial_learning/df.h5'
+store = pd.HDFStore(filename)
+for i in range(1, 11):
+    root_dir = homedir + '/adversarial_learning/'
+    #if using unix change the syntax for root directory above
     file='training_part_0'+str(i)+'_of_10.txt'
-    full_path='~/adversarial_learning/'+file
-    name=pd.read_csv(full_path, delimiter='|',header=None, names=colnames)
-    files.append(name)
+    filepath = os.path.join(root_dir, file)
+    datafile=pd.read_csv(filepath, delimiter='|',header=None, names=colnames)
+    store.append('data', datafile)
+store.close()
 
-
-#function to append multiple files
-def main():
-    block_size = 1024 * 1024 #setting a buffer size to read file in segments
-
-    if hasattr(os, 'O_BINARY'):
-        o_binary = getattr(os, 'O_BINARY') #opens files in binary output
-    else:
-        o_binary = 0
-    output_file = os.open('~/adversarial_learning/output-file', os.O_WRONLY | o_binary) #open for writing only
-    for file in files:
-        input_file = os.open(file, os.O_RDONLY | o_binary) #open for reading only
-        while True:
-            input_block = os.read(input_file, block_size)
-            if not input_block:
-                break
-            os.write(output_file, input_block)
-        os.close(input_file)
-    os.close(output_file)
-
-main()
-
-#or take each of the the files and convert into one massive hdf5 file
-    
-#open the output file and store as pandas dataframe
-#HDF5 (pytables) method to access large objects
-
-filename = '~/adversarial_learning/temp.hdf5'
-
+store = pd.HDFStore(filename)
+df1 = store['data']
 
 #create one file from all the training instances
 #df1=pd.concat(files)
