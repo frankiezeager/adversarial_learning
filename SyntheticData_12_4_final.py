@@ -64,12 +64,14 @@ df1 = store['data']
 #first sort everything by date
 df1 = df1.sort_values(['AUTHZN_RQST_PROC_DT'])
 
-df1['FRD_IND'].replace(['Y', 'N'], [1, 0], inplace=True)
+#convert these two columns from Y and N to 1 and 0
+df1[['FRD_IND','RCURG_AUTHZN_IND']].replace(['Y', 'N'], [1, 0], inplace=True)
 
-df1['RCURG_AUTHZN_IND'].replace(['Y', 'N'], [1, 0], inplace=True)
+#convert column type to numeric
 df1['RCURG_AUTHZN_IND'] = df1['RCURG_AUTHZN_IND'].convert_objects(convert_numeric=True)
-df1['MRCH_CATG_CD'] = df1['MRCH_CATG_CD'].astype('category')
-df1['POS_ENTRY_MTHD_CD'] = df1['POS_ENTRY_MTHD_CD'].astype('category')
+
+#convert columns to categorical
+df1[['MRCH_CATG_CD', 'POS_ENTRY_MTHD_CD']] = df1[['MRCH_CATG_CD', 'POS_ENTRY_MTHD_CD']].astype('category')
 
 #only select needed columns
 t_ind = [2, 7, 14, 18, 23, 30, 44, 53, 57, 58, 68]
@@ -77,28 +79,21 @@ t_ind = [2, 7, 14, 18, 23, 30, 44, 53, 57, 58, 68]
 #cols = pd.DataFrame(j.iloc[:,t_ind])
 df1 = pd.DataFrame(df1.iloc[:,t_ind])
 
-df1_MRCHCODE = pd.get_dummies(df1['MRCH_CATG_CD']) #converting to dummy variables
-df1_POSENTRY = pd.get_dummies(df1['POS_ENTRY_MTHD_CD']) #converting to dummy variables
+#the function below processes df1 in chunks, creates dummy values for certain columns and concatenates them at the end
+chunk_size = math.floor(df1.shape[0]/5)
+chunks = len(df1) // chunk_size
+df_list = np.array_split(df1, chunks)
+df_x = []
+for df_chunk in enumerate(df_list):
+    x = pd.get_dummies(df_chunk, prefix=['MRCH_CATG_CD_', 'POS_ENTRY_MTHD_CD_'], columns=['MRCH_CATG_CD', 'POS_ENTRY_MTHD_CD']).astype(np.int8)
+    df_x.append(x)
 
-#join the dummy variables to the main data frame
-df1 = pd.concat([df1, df1_MRCHCODE], axis=1)
-
-#join the dummy variables to the main data frame
-df1 = pd.concat([df1, df1_POSENTRY], axis=1)
-
-#drop the original categorical variables (MRCH_CATG_CD) and (POS_ENTRY_MTHD_CD) and (RCURG_AUTHZN_IND)
-df1.drop(['MRCH_CATG_CD', 'POS_ENTRY_MTHD_CD', 'RCURG_AUTHZN_IND'],inplace=True,axis=1)
-
+df1 = pd.concat(df_x, axis=0) #concatenate the processed chunks back together
+del df_x  #Free-up memory
 
 fraud_list=df1['FRD_IND']
 df1=df1.drop('FRD_IND',axis=1)
 df1['FRD_IND']=fraud_list
-
-#df1 = df1.sort_values(['AUTHZN_RQST_PROC_DT'])
-#df1=df1.drop('AUTHZN_RQST_PROC_DT',axis=1)
-#create an out-of-time final test set
-
-
 
 #############################################################
 
