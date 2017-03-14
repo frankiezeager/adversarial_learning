@@ -41,13 +41,13 @@ colnames = ['AUTH_ID','ACCT_ID_TOKEN','FRD_IND','ACCT_ACTVN_DT','ACCT_AVL_CASH_B
 #    files.append(name)
 
 #reading from EC2 instance memory and appending files to hdf5 object
-homedir = os.path.expanduser(os.getenv('USERPROFILE'))
-filename = homedir + '/adversarial_learning/df.h5'
+#homedir = os.path.expanduser(os.getenv('USERPROFILE'))
+#filename = homedir + '/adversarial_learning/df.h5'
 #if using unix then use the filepath below
-#filename = '~/adversarial_learning/df.h5'
+filename = '/home/ec2-user/adversarial_learning/df.h5'
 store = pd.HDFStore(filename)
 for i in range(1, 11):
-    root_dir = homedir + '/adversarial_learning/'
+    root_dir = '/home/ec2-user/adversarial_learning/'
     #if using unix change the syntax for root directory above
     file='training_part_0'+str(i)+'_of_10.txt'
     filepath = os.path.join(root_dir, file)
