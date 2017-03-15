@@ -381,7 +381,7 @@ for i in folds2:
     lowest_bic = np.infty
     bic = []
           # Fit a Gaussian mixture with EM
-    gmm = mixture.GaussianMixture(n_components=5,covariance_type='full')
+    gmm = mixture.GaussianMixture(n_components=3,covariance_type='full')
     gmm.fit(strategy_df)
 
     #assign each transaction a strategy
