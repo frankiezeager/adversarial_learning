@@ -121,7 +121,6 @@ model_list=[]
 
 iter_num = 1
 
-colors = cycle(['cyan', 'indigo', 'seagreen'])
 lw = 2
 
 allsynthetic_sets = []
@@ -129,8 +128,8 @@ all_fold_oot=[]
 
 for i in range(1,4):
     #read in the data file
-    #df1=pd.read_csv('/home/ec2-user/adversarial_learning/'+'training_part_0'+str(i)+'_of_10.txt'
-    df1=pd.read_csv(str('/Users/frankiezeager/Documents/Graduate School/Capstone/'+'training_part_0'+str(i)+'_of_10.txt'),delimiter='|',header=None, names=colnames)
+    df1=pd.read_csv('/home/ec2-user/adversarial_learning/'+'training_part_0'+str(i)+'_of_10.txt'
+    #df1=pd.read_csv(str('/Users/frankiezeager/Documents/Graduate School/Capstone/'+'training_part_0'+str(i)+'_of_10.txt'),delimiter='|',header=None, names=colnames)
     df1=df1.sample(n=100000)
     #take out any NaN's from the data set
     df1=df1.dropna(axis=0)
@@ -195,14 +194,30 @@ for i in range(1,4):
     #train, test, out_of_time = np.split(fold_loc.sample(frac=1), [int(.4*len(fold_loc)), int(.8*len(fold_loc))])
     #60% training, 20% test, 20% validation
     
-    train, intermediate_set=train_test_split(df1,train_size=.6,test_size=.4)
+    #train, out_of_time, test=np.split(df1.sample(frac=1), [int(.6*len(df1)), int(.8*len(df1))])
+    train,intermediate_set=train_test_split(df1,train_size=.6,test_size=.4)
     test, out_of_time=train_test_split(intermediate_set, train_size=.5,test_size=.5)
+    #delete intermediate set
+    del intermediate_set
+    
+#    train=pd.DataFrame(train)
+#    out_of_time=pd.DataFrame(out_of_time)
+#    test=pd.DataFrame(test)
     train=train.fillna(method='ffill')
     test=test.fillna(method='ffill')
     out_of_time=out_of_time.fillna(method='ffill')
     #delete intermediate data frame
-    del intermediate_set
+    #del intermediate_set
     
+    #convert out of time data frame variables
+    out_of_time.FRD_IND.map(dict(Y=1,N=0))
+    out_of_time.RCURG_AUTHZN_IND.map(dict(Y=1,N=0))
+    #out_of_time['FRD_IND'].replace(['Y', 'N'], [1, 0], inplace=True)
+    #out_of_time['RCURG_AUTHZN_IND'].replace(['Y', 'N'], [1, 0], inplace=True)
+    
+    #convert column type to numeric
+    out_of_time['RCURG_AUTHZN_IND'] = out_of_time['RCURG_AUTHZN_IND'].convert_objects(convert_numeric=True)
+    out_of_time['FRD_IND'] = out_of_time['FRD_IND'].convert_objects(convert_numeric=True)
     all_fold_oot.append(out_of_time)
     
     test = test.sort_values(['AUTHZN_AMT']) #sorting by transaction amount
@@ -335,10 +350,15 @@ for i in range(1,4):
 #plt.legend(loc="lower right")
 #plt.show()
 
-c
+
 #having three out-of-time sets from synthetic data
-i_num = 1
-for l, color, z in zip(all_fold_oot, colors, model_list):
+i_num = 0
+fold_n=[1,4,7,10]
+
+colors = cycle(['cyan', 'indigo', 'seagreen','darkorange'])
+folds_list=[all_fold_oot[0],all_fold_oot[3],all_fold_oot[6],all_fold_oot[9]]
+
+for l, color, z in zip(folds_list, colors, model_list):
     syntheticdata_test=l.drop('FRD_IND',axis=1)
     #mod_test2 = z.predict(syntheticdata_test)
     mod_test3 = z.predict_proba(syntheticdata_test)[:,1]
@@ -352,7 +372,7 @@ for l, color, z in zip(all_fold_oot, colors, model_list):
     #mod_test3 = z.predict_proba(syntheticdata_test)[:,1]
     #fpr1, tpr1, _ = roc_curve(l['FRD_IND'], mod_test3)
     aucscore = auc(fpr, tpr )
-    plt.plot(fpr, tpr, lw=lw, color=color, label='ROC fold %d (area = %0.2f)' % (i_num, aucscore))
+    plt.plot(fpr, tpr, lw=lw, color=color, label='ROC fold %d (area = %0.2f)' % (fold_n[i_num], aucscore))
     i_num += 1
     
 #adding ROC curve code
@@ -363,43 +383,127 @@ plt.xlabel('False Positive Rate')
 plt.ylabel('True Positive Rate')
 plt.title('ROC Test')
 plt.legend(loc="lower right")
-plt.show()
-savefig('~/adversarial_learning/out_of_time_roc.png',bbox_inches='tight')
+#plt.show()
+
+#savefig('~/adversarial_learning/out_of_time_roc.png',bbox_inches='tight')
+plt.savefig('out_of_time_roc.png',bbox_inches='tight')
 
 
-############################################ MODEL STAYS THE SAME #######################################
-
-###############################################################
-###############################################################
-###############################################################
-#never changes
-###############################################################
-###############################################################
-###############################################################
 
 
-model2_list=[]
 
+##### Model Stays the Same, Adversary Changes
+      
+        
 iteration_num = 0
-fraud_trans2_list=[]
-listFNR2=[]
+
+listFNR=[]
 #split each fold into training and testing sets
-best_strat_list_nochange=[]
-AUC_list2=[]
+best_strat_list=[]
+AUC_list=[]
+model_list=[]
 
 iter_num = 1
 
-colors = cycle(['cyan', 'indigo', 'seagreen'])
 lw = 2
 
-allsynthetic_sets2 = []
-all_fold_oot_nochange=[]
+allsynthetic_sets = []
+all_fold_oot=[]
 
-for i in folds2:
-    fold_loc = i
-    train, test, out_of_time = np.split(fold_loc, [int(.4*len(fold_loc)), int(.8*len(fold_loc))])
+for i in range(1,4):
+    #read in the data file
+    df1=pd.read_csv('/home/ec2-user/adversarial_learning/'+'training_part_0'+str(i)+'_of_10.txt'
+    #df1=pd.read_csv(str('/Users/frankiezeager/Documents/Graduate School/Capstone/'+'training_part_0'+str(i)+'_of_10.txt'),delimiter='|',header=None, names=colnames)
+    df1=df1.sample(n=100000)
+    #take out any NaN's from the data set
+    df1=df1.dropna(axis=0)
     
-    all_fold_oot_nochange.append(out_of_time)
+    #only select needed columns
+    #2-Fraud index (whether or not is fraud)
+    #7-ACCT_CUR_BAL
+    #14-Total Num. Authorizations
+    #18-authorization amount
+    #23-authorization outstanding amount
+    #30-Avg. Daily Authorization Amount
+    #44-Merchant Category ID (convert to factor)
+    #53-Plastic Issue Duration
+    #57- Point of Sale Entry Method (convert to factor)
+    #58 - Recurring Charge (Relabel as 0/1)
+    #68 - Distance from Home
+    df1 = df1.sort_values(['AUTHZN_RQST_PROC_DT'])
+    t_ind = [2, 7, 14, 18, 23, 30, 44, 53, 57, 58, 68]
+    
+    #cols = pd.DataFrame(j.iloc[:,t_ind])
+    df1 = pd.DataFrame(df1.iloc[:,t_ind])
+    #convert these two columns from Y and N to 1 and 0,
+    df1['FRD_IND'].replace(['Y', 'N'], [1, 0], inplace=True)
+    df1['RCURG_AUTHZN_IND'].replace(['Y', 'N'], [1, 0], inplace=True)
+    fraud_list=df1['FRD_IND']
+    df1=df1.drop('FRD_IND',axis=1)
+    df1['FRD_IND']=fraud_list
+
+    col_list=df1.columns.values.tolist()
+
+    
+
+ 
+    
+#    #convert column type to numeric
+    df1['RCURG_AUTHZN_IND'] = df1['RCURG_AUTHZN_IND'].convert_objects(convert_numeric=True)
+    df1['FRD_IND'] = df1['FRD_IND'].convert_objects(convert_numeric=True)
+#    #convert columns to categorical
+#    df1['MRCH_CATG_CD'] = df1['MRCH_CATG_CD'].astype('category')
+#    df1['POS_ENTRY_MTHD_CD']=df1['POS_ENTRY_MTHD_CD'].astype('category')
+#    
+#    
+#    df1 = pd.concat([df1, pd.get_dummies(df1['MRCH_CATG_CD'],prefix = 'MRCH_CATG_CD_').astype(np.int8)], 
+#                                  axis=1)
+#    
+#    df1 = pd.concat([df1, pd.get_dummies(df1['POS_ENTRY_MTHD_CD'],prefix = 'POS_ENTRY_MTHD_CD_').astype(np.int8)], 
+#                                  axis=1)
+    #fold_loc = df1
+    
+    if i!=1:
+        #find percent fraud in current df
+        df_pct_fraud=sum(df1.FRD_IND==1)/len(df1)
+        #find difference between this and the .3% fraud desired
+        pct_fraud_needed=.003-df_pct_fraud
+        #find number of fraud transactions needed
+        num_fraud_trans=pct_fraud_needed*len(df1)
+        num_fraud_trans=num_fraud_trans.astype(int)
+        add_fraud=syntheticdata.sample(n=num_fraud_trans)
+        df1=pd.concat([df1,add_fraud],axis=0)
+
+    #split into training, 'testing' (finding the adversarial best strategy data frame), out of time (validation set)
+    #train, test, out_of_time = np.split(fold_loc.sample(frac=1), [int(.4*len(fold_loc)), int(.8*len(fold_loc))])
+    #60% training, 20% test, 20% validation
+    
+    #train, out_of_time, test=np.split(df1.sample(frac=1), [int(.6*len(df1)), int(.8*len(df1))])
+    train,intermediate_set=train_test_split(df1,train_size=.6,test_size=.4)
+    test, out_of_time=train_test_split(intermediate_set, train_size=.5,test_size=.5)
+    #delete intermediate set
+    del intermediate_set
+    
+#    train=pd.DataFrame(train)
+#    out_of_time=pd.DataFrame(out_of_time)
+#    test=pd.DataFrame(test)
+    train=train.fillna(method='ffill')
+    test=test.fillna(method='ffill')
+    out_of_time=out_of_time.fillna(method='ffill')
+    #delete intermediate data frame
+    #del intermediate_set
+    
+    #convert out of time data frame variables
+    out_of_time.FRD_IND.map(dict(Y=1,N=0))
+    out_of_time.RCURG_AUTHZN_IND.map(dict(Y=1,N=0))
+    #out_of_time['FRD_IND'].replace(['Y', 'N'], [1, 0], inplace=True)
+    #out_of_time['RCURG_AUTHZN_IND'].replace(['Y', 'N'], [1, 0], inplace=True)
+    
+    #convert column type to numeric
+    out_of_time['RCURG_AUTHZN_IND'] = out_of_time['RCURG_AUTHZN_IND'].convert_objects(convert_numeric=True)
+    out_of_time['FRD_IND'] = out_of_time['FRD_IND'].convert_objects(convert_numeric=True)
+    all_fold_oot.append(out_of_time)
+    
     test = test.sort_values(['AUTHZN_AMT']) #sorting by transaction amount
 #training the classifier
 #7-ACCT_CUR_BAL
@@ -409,16 +513,19 @@ for i in folds2:
 #57- Point of Sale Entry Method (convert to factor)
 #58 - Recurring Charge (Relabel as 0/1)
 #68 - Distance from Home
+    
     train_cols = train.drop('FRD_IND', axis=1) #columns for training
-
+    
     #Logistic Regression
-    logit = LogisticRegression(class_weight="balanced")
-
+    #logit = LogisticRegression(class_weight='balanced')
+    
+    #use the first model every time
     mod = model_list[0]
+    #model_list.append(mod)
     testcol = test.drop('FRD_IND',axis=1)
 
     mod_test = mod.predict(testcol)
-    model2_list.append(mod)
+
 #####output coverage curve csv (predicted probabilities)######################
     prob_test=mod.predict_proba(testcol)
     prob_test=pd.DataFrame(prob_test)
@@ -430,25 +537,24 @@ for i in folds2:
     prob_col_list=['index1','prob_0','prob_1','index2','truth_val','index3','pred_truth_val']
     prob_df.columns=prob_col_list
     prob_df=prob_df.drop(['index1','index2','index3'],axis=1)
-    path='/Users/nathanfogal/Desktop' #set path
+    path='/Users/frankiezeager/Desktop' #set path
     prob_df.to_csv(path+'both_learn_coverage_'+str(iteration_num)+'.csv')
 ###############################################################################
 
     #find false negative rate
     cmfull=confusion_matrix(test['FRD_IND'],mod_test)
-    listFNR2.append(cmfull[0][1])
+    listFNR.append(cmfull[0][1])
     fpr, tpr, thresholds = metrics.roc_curve(test['FRD_IND'], mod_test, pos_label=2)
 
     #find auc score
     print(roc_auc_score(test['FRD_IND'],mod_test ))
-    AUC_list2.append(roc_auc_score(test['FRD_IND'],mod_test ))
+    AUC_list.append(roc_auc_score(test['FRD_IND'],mod_test ))
 
 #########Gaussian Mixture Model to Determine Strategies#############
 
     #subset df to include only pertinent (adversarial-controlled) continuous vars
-    strat_ind = [0, 2, 3, 5, 6]
-    #strat_ind = [18,53,68,7,23] 
-    strategy_df= pd.DataFrame(test.iloc[:,strat_ind]) #incorrect subsetting of dataframe, did not include these in the original df!!!
+    strat_ind = [0, 2, 3, 5, 6] 
+    strategy_df= pd.DataFrame(test.iloc[:,strat_ind]) 
 
 
     #find best number of strategies:
@@ -479,14 +585,13 @@ for i in folds2:
         #cols=j.iloc[:,:-1] 
         #cols=cols.iloc[:,:-1]
         col_response = j.iloc[:,-2]
-        ###############################ERROR: #too many columns#########
         pred = mod.predict(cols)
         cm = confusion_matrix(col_response, pred)
         FNR = cm[0][1]
         fn_rate.append(FNR)
 
     best_strat = fn_rate.index(max(fn_rate))
-    best_strat_list_nochange.append(best_strat)
+    best_strat_list.append(best_strat)
     best_fold = all_batches[best_strat]
 
     #Implement SMOTE
@@ -494,46 +599,54 @@ for i in folds2:
     test_cols = best_fold.drop(labels='Strategy Number',axis=1)
     test_cols = test_cols.drop(labels='FRD_IND',axis=1)
     #test_cols = test_cols.values
-    if (iteration_num+1)<len(folds2):
-        fraud_next_fold=sum(folds2[iteration_num+1].FRD_IND==1)
-        new_fraud_fold=fold_size*.002 #specified next fold fraud ratio
-        fraud_needed=math.ceil(new_fraud_fold-fraud_next_fold)
+#    if i<3:
+#        fraud_next_fold=sum(folds[iteration_num+1].FRD_IND==1)
+#        new_fraud_fold=fold_size*.002 #specified next fold fraud ratio
+#        fraud_needed=math.ceil(new_fraud_fold-fraud_next_fold)
     smote = SMOTE(ratio=0.5, kind='regular')
     smox, smoy = smote.fit_sample(test_cols, best_fold.FRD_IND)
     smox = pd.DataFrame(smox)
     smoy = pd.DataFrame(smoy)
-    syntheticdata2 = pd.concat((smox,smoy), axis=1)
-    syntheticdata2.columns=col_list
-    
-    #take all of the synthetic data as an out-of-time sample
-    allsynthetic_sets2.append(syntheticdata2)
-
-    #take all the fraudulent transactions of best strategy batch and add it to the next fold
-    fraud_trans = syntheticdata2[syntheticdata2.iloc[:,-1] == 1]
-    #append the fraud transactions to fold+1
-    if (iteration_num+1)<len(folds2):
-        fraud_trans = fraud_trans.sample(n=fraud_needed)
-        fraud_trans2_list.append(fraud_trans)
-        folds2[iteration_num+1]=pd.concat([folds2[iteration_num+1], fraud_trans], axis=0)
-        folds2[iteration_num+1].sample(frac=1).reset_index(drop=True)
-        iteration_num = iteration_num+ 1
-        print(iteration_num)
-
-
+    syntheticdata = pd.concat((smox,smoy), axis=1)
+    syntheticdata.columns=col_list
+    #delete data frame to make more space in memory
+    del df1
+#    
+#    #take all of the synthetic data as an out-of-time sample
+#    allsynthetic_sets.append(syntheticdata)
+#
+#    #take all the fraudulent transactions of best strategy batch and add it to the next fold
+#    fraud_trans = syntheticdata[syntheticdata.iloc[:,-1] == 1]
+#    #append the fraud transactions to fold+1
+#    if (iteration_num+1)<len(folds):
+#        fraud_trans = fraud_trans.sample(n=fraud_needed)
+#        folds[iteration_num+1]=pd.concat([folds[iteration_num+1], fraud_trans], axis=0)
+#        iteration_num = iteration_num+ 1
+#        print(iteration_num)
 
 
 
+#plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
+#plt.xlim([-0.05, 1.05])
+#plt.ylim([-0.05, 1.05])
+#plt.xlabel('False Positive Rate')
+#plt.ylabel('True Positive Rate')
+#plt.title('ROC Test')
+#plt.legend(loc="lower right")
+#plt.show()
 
 
+#having three out-of-time sets from synthetic data
+i_num = 0
+fold_n=[1,4,7,10]
 
+colors = cycle(['cyan', 'indigo', 'seagreen','darkorange'])
+folds_list=[all_fold_oot[0],all_fold_oot[3],all_fold_oot[6],all_fold_oot[9]]
 
-
-firstmod = model_list[0] #original model
-i_num = 1
-for l, color in zip(all_fold_oot_nochange, colors):
+for l, color, z in zip(folds_list, colors, model_list):
     syntheticdata_test=l.drop('FRD_IND',axis=1)
     #mod_test2 = z.predict(syntheticdata_test)
-    mod_test3 = firstmod.predict_proba(syntheticdata_test)[:,1]
+    mod_test3 = z.predict_proba(syntheticdata_test)[:,1]
     #cmfull=confusion_matrix(l['FRD_IND'],mod_test2)
     fpr, tpr, _ = roc_curve(l['FRD_IND'], mod_test3)
     #fpr, tpr, thresholds = roc_curve(l['FRD_IND'], mod_test3, pos_label=2)
@@ -543,21 +656,20 @@ for l, color in zip(all_fold_oot_nochange, colors):
     #getting predicted probablilites for fraud
     #mod_test3 = z.predict_proba(syntheticdata_test)[:,1]
     #fpr1, tpr1, _ = roc_curve(l['FRD_IND'], mod_test3)
-    aucscore = auc(fpr, tpr)
-    plt.plot(fpr, tpr, lw=lw, color=color, label='ROC fold %d (area = %0.2f)' % (i_num, aucscore))
+    aucscore = auc(fpr, tpr )
+    plt.plot(fpr, tpr, lw=lw, color=color, label='ROC fold %d (area = %0.2f)' % (fold_n[i_num], aucscore))
     i_num += 1
-
+    
 #adding ROC curve code
 plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
 plt.xlim([-0.05, 1.05])
 plt.ylim([-0.05, 1.05])
 plt.xlabel('False Positive Rate')
 plt.ylabel('True Positive Rate')
-plt.title('ROC Test: Model Does Not Retrain')
+plt.title('ROC Test')
 plt.legend(loc="lower right")
-plt.show()
+#plt.show()
 
-
-
-savefig('~/adversarial_learning/roc_curves.png',bbox_inches='tight')
+#savefig('~/adversarial_learning/out_of_time_roc.png',bbox_inches='tight')
+plt.savefig('out_of_time_roc_no_change.png',bbox_inches='tight')
 
