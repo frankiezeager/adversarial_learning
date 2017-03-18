@@ -510,19 +510,6 @@ for i in range(1,11):
 
     mod_test = mod.predict(testcol)
 
-#####output coverage curve csv (predicted probabilities)######################
-    prob_test=mod.predict_proba(testcol)
-    prob_test=pd.DataFrame(prob_test)
-    #real truth values
-    prob_target=test.FRD_IND
-    #predicted truth values
-    prob_pred_truth=pd.DataFrame(mod_test)
-    prob_df=pd.concat([prob_test.reset_index(),prob_target.reset_index(),prob_pred_truth.reset_index()],axis=1)
-    prob_col_list=['index1','prob_0','prob_1','index2','truth_val','index3','pred_truth_val']
-    prob_df.columns=prob_col_list
-    prob_df=prob_df.drop(['index1','index2','index3'],axis=1)
-    path='/Users/frankiezeager/Desktop' #set path
-    prob_df.to_csv(path+'both_learn_coverage_'+str(iteration_num)+'.csv')
 ###############################################################################
 
     #find false negative rate
