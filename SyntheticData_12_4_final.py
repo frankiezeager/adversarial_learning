@@ -379,7 +379,8 @@ plt.savefig('out_of_time_roc.png',bbox_inches='tight')
 
 
 ##### Model Stays the Same, Adversary Changes
-      
+#make sure the seed is set
+random.seed(12345)      
         
 iteration_num = 0
 
