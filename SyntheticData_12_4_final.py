@@ -358,7 +358,7 @@ for l, color, z in zip(folds_list, colors, model_list):
     #mod_test3 = z.predict_proba(syntheticdata_test)[:,1]
     #fpr1, tpr1, _ = roc_curve(l['FRD_IND'], mod_test3)
     aucscore = auc(fpr, tpr )
-    plt.plot(fpr, tpr, lw=lw, color=color, label='ROC fold %d (area = %0.2f)' % (fold_n[i_num], aucscore))
+    plt.plot(fpr, tpr, lw=lw, color=color, label='ROC Round %d (area = %0.2f)' % (fold_n[i_num], aucscore))
     i_num += 1
     
 #adding ROC curve code
@@ -629,7 +629,7 @@ for l, color, z in zip(folds_list, colors, model_list):
     #mod_test3 = z.predict_proba(syntheticdata_test)[:,1]
     #fpr1, tpr1, _ = roc_curve(l['FRD_IND'], mod_test3)
     aucscore = auc(fpr, tpr )
-    plt.plot(fpr, tpr, lw=lw, color=color, label='ROC fold %d (area = %0.2f)' % (fold_n[i_num], aucscore))
+    plt.plot(fpr, tpr, lw=lw, color=color, label='ROC Round %d (area = %0.2f)' % (fold_n[i_num], aucscore))
     i_num += 1
     
 #adding ROC curve code
