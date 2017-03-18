@@ -181,8 +181,8 @@ for i in range(1,11):
     if i!=1:
         #find percent fraud in current df
         df_pct_fraud=sum(df1.FRD_IND==1)/len(df1)
-        #find difference between this and the .3% fraud desired
-        pct_fraud_needed=.003-df_pct_fraud
+        #find difference between this and the 1% fraud desired
+        pct_fraud_needed=.01-df_pct_fraud
         #find number of fraud transactions needed
         num_fraud_trans=pct_fraud_needed*len(df1)
         num_fraud_trans=num_fraud_trans.astype(int)
@@ -450,8 +450,8 @@ for i in range(1,11):
     if i!=1:
         #find percent fraud in current df
         df_pct_fraud=sum(df1.FRD_IND==1)/len(df1)
-        #find difference between this and the .3% fraud desired
-        pct_fraud_needed=.003-df_pct_fraud
+        #find difference between this and the 1% fraud desired
+        pct_fraud_needed=.01-df_pct_fraud
         #find number of fraud transactions needed
         num_fraud_trans=pct_fraud_needed*len(df1)
         num_fraud_trans=num_fraud_trans.astype(int)
