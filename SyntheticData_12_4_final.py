@@ -28,7 +28,7 @@ import os
 plt.switch_backend('agg')
 
 colnames = ['AUTH_ID','ACCT_ID_TOKEN','FRD_IND','ACCT_ACTVN_DT','ACCT_AVL_CASH_BEFORE_AMT','ACCT_AVL_MONEY_BEFORE_AMT','ACCT_CL_AMT','ACCT_CURR_BAL','ACCT_MULTICARD_IND','ACCT_OPEN_DT','ACCT_PROD_CD','ACCT_TYPE_CD','ADR_VFCN_FRMT_CD','ADR_VFCN_RESPNS_CD','APPRD_AUTHZN_CNT','APPRD_CASH_AUTHZN_CNT','ARQC_RSLT_CD','AUTHZN_ACCT_STAT_CD','AUTHZN_AMT','AUTHZN_CATG_CD','AUTHZN_CHAR_CD','AUTHZN_OPSET_ID','AUTHZN_ORIG_SRC_ID','AUTHZN_OUTSTD_AMT','AUTHZN_OUTSTD_CASH_AMT','AUTHZN_RQST_PROC_CD','AUTHZN_RQST_PROC_DT','AUTHZN_RQST_PROC_TM','AUTHZN_RQST_TYPE_CD','AUTHZN_TRMNL_PIN_CAPBLT_NUM','AVG_DLY_AUTHZN_AMT','CARD_VFCN_2_RESPNS_CD','CARD_VFCN_2_VLDTN_DUR','CARD_VFCN_MSMT_REAS_CD','CARD_VFCN_PRESNC_CD','CARD_VFCN_RESPNS_CD','CARD_VFCN2_VLDTN_CD','CDHLDR_PRES_CD','CRCY_CNVRSN_RT','ELCTR_CMRC_IND_CD','HOME_PHN_NUM_CHNG_DUR','HOTEL_STAY_CAR_RENTL_DUR','LAST_ADR_CHNG_DUR','LAST_PLSTC_RQST_REAS_CD','MRCH_CATG_CD','MRCH_CNTRY_CD','NEW_USER_ADDED_DUR','PHN_CHNG_SNC_APPN_IND','PIN_BLK_CD','PIN_VLDTN_IND','PLSTC_ACTVN_DT','PLSTC_ACTVN_REQD_IND','PLSTC_FRST_USE_TS','PLSTC_ISU_DUR','PLSTC_PREV_CURR_CD','PLSTC_RQST_TS','POS_COND_CD','POS_ENTRY_MTHD_CD','RCURG_AUTHZN_IND','RVRSL_IND','SENDR_RSIDNL_CNTRY_CD','SRC_CRCY_CD','SRC_CRCY_DCML_PSN_NUM','TRMNL_ATTNDNC_CD','TRMNL_CAPBLT_CD','TRMNL_CLASFN_CD','TRMNL_ID','TRMNL_PIN_CAPBLT_CD','DISTANCE_FROM_HOME']
-random.seed(1345)
+random.seed(1575)
 #df = pd.read_csv('/Users/frankiezeager/Documents/Graduate School/Capstone/code/training_part_10_of_10.txt', delimiter='|',header=None, names=colnames)
 #df1 = df.sample(n=1000000)
 
@@ -181,8 +181,8 @@ for i in range(1,11):
     if i!=1:
         #find percent fraud in current df
         df_pct_fraud=sum(df1.FRD_IND==1)/len(df1)
-        #find difference between this and the 5% fraud desired
-        pct_fraud_needed=.05-df_pct_fraud
+        #find difference between this and the 15% fraud desired
+        pct_fraud_needed=.15-df_pct_fraud
         #find number of fraud transactions needed
         num_fraud_trans=pct_fraud_needed*len(df1)
         num_fraud_trans=num_fraud_trans.astype(int)
@@ -194,8 +194,8 @@ for i in range(1,11):
     #60% training, 20% test, 20% validation
     
     #train, out_of_time, test=np.split(df1.sample(frac=1), [int(.6*len(df1)), int(.8*len(df1))])
-    train,intermediate_set=train_test_split(df1,train_size=.6,test_size=.4,random_state=1345)
-    test, out_of_time=train_test_split(intermediate_set, train_size=.5,test_size=.5,random_state=1345)
+    train,intermediate_set=train_test_split(df1,train_size=.6,test_size=.4,random_state=1575)
+    test, out_of_time=train_test_split(intermediate_set, train_size=.5,test_size=.5,random_state=1575)
     #delete intermediate set
     del intermediate_set
     
@@ -372,9 +372,10 @@ plt.legend(loc="lower right")
 #plt.show()
 
 #savefig('~/adversarial_learning/out_of_time_roc.png',bbox_inches='tight')
-plt.savefig('out_of_time_roc.png',bbox_inches='tight')
+plt.savefig('out_of_time_roc_15pct.png',bbox_inches='tight')
 
-
+#remove plot
+plt.clf()
 
 
 
@@ -451,8 +452,8 @@ for i in range(1,11):
     if i!=1:
         #find percent fraud in current df
         df_pct_fraud=sum(df1.FRD_IND==1)/len(df1)
-        #find difference between this and the 5% fraud desired
-        pct_fraud_needed=.05-df_pct_fraud
+        #find difference between this and the 15% fraud desired
+        pct_fraud_needed=.15-df_pct_fraud
         #find number of fraud transactions needed
         num_fraud_trans=pct_fraud_needed*len(df1)
         num_fraud_trans=num_fraud_trans.astype(int)
@@ -463,9 +464,10 @@ for i in range(1,11):
     #train, test, out_of_time = np.split(fold_loc.sample(frac=1), [int(.4*len(fold_loc)), int(.8*len(fold_loc))])
     #60% training, 20% test, 20% validation
     
+    
     #train, out_of_time, test=np.split(df1.sample(frac=1), [int(.6*len(df1)), int(.8*len(df1))])
-    train,intermediate_set=train_test_split(df1,train_size=.6,test_size=.4,random_state=1345)
-    test, out_of_time=train_test_split(intermediate_set, train_size=.5,test_size=.5,random_state=1345)
+    train,intermediate_set=train_test_split(df1,train_size=.6,test_size=.4,random_state=1575)
+    test, out_of_time=train_test_split(intermediate_set, train_size=.5,test_size=.5,random_state=1575)
     #delete intermediate set
     del intermediate_set
     
@@ -607,6 +609,7 @@ for i in range(1,11):
 #plt.legend(loc="lower right")
 #plt.show()
 
+#remove previous plot
 
 #having three out-of-time sets from synthetic data
 i_num = 0
@@ -643,7 +646,9 @@ plt.legend(loc="lower right")
 #plt.show()
 
 #savefig('~/adversarial_learning/out_of_time_roc.png',bbox_inches='tight')
-plt.savefig('out_of_time_roc_no_change.png',bbox_inches='tight')
+plt.savefig('out_of_time_roc_no_change_15pct.png',bbox_inches='tight')
 
 ####
+
+
 ##
