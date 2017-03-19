@@ -186,7 +186,7 @@ for i in range(1,11):
         #find number of fraud transactions needed
         num_fraud_trans=pct_fraud_needed*len(df1)
         num_fraud_trans=num_fraud_trans.astype(int)
-        add_fraud=syntheticdata.sample(n=num_fraud_trans)
+        add_fraud=syntheticdata.sample(n=num_fraud_trans,replace=True)
         df1=pd.concat([df1,add_fraud],axis=0)
 
     #split into training, 'testing' (finding the adversarial best strategy data frame), out of time (validation set)
@@ -371,6 +371,7 @@ plt.title('ROC Test')
 plt.legend(loc="lower right")
 #plt.show()
 
+
 #savefig('~/adversarial_learning/out_of_time_roc.png',bbox_inches='tight')
 plt.savefig('out_of_time_roc_15pct.png',bbox_inches='tight')
 
@@ -457,9 +458,10 @@ for i in range(1,11):
         #find number of fraud transactions needed
         num_fraud_trans=pct_fraud_needed*len(df1)
         num_fraud_trans=num_fraud_trans.astype(int)
-        add_fraud=syntheticdata.sample(n=num_fraud_trans)
+        add_fraud=syntheticdata.sample(n=num_fraud_trans,replace=True)
         df1=pd.concat([df1,add_fraud],axis=0)
 
+ 
     #split into training, 'testing' (finding the adversarial best strategy data frame), out of time (validation set)
     #train, test, out_of_time = np.split(fold_loc.sample(frac=1), [int(.4*len(fold_loc)), int(.8*len(fold_loc))])
     #60% training, 20% test, 20% validation
