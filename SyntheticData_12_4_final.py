@@ -635,7 +635,7 @@ fold_n=[1,4,7,10]
 
 colors = cycle(['cyan', 'indigo', 'seagreen','darkorange'])
 folds_list=[all_fold_oot[0],all_fold_oot[3],all_fold_oot[6],all_fold_oot[9]]
-model_list2=[model_list[0],model_list[3],model_list[6],model_list[9]]
+model_list2=[model_list[0],model_list[0],model_list[0],model_list[0]]
 
 for l, color, z in zip(folds_list, colors, model_list2):
     syntheticdata_test=l.drop('FRD_IND',axis=1)
@@ -669,7 +669,8 @@ plt.savefig('out_of_time_roc_no_change_15pct.png',bbox_inches='tight')
 
 
 #print all AUCs
-for fold, model in  zip(all_fold_oot, model_list):
+for fold in all_fold_oot:
+    model=model_list[0]
     syntheticdata_test=fold.drop('FRD_IND',axis=1)
     mod_test3 = model.predict_proba(syntheticdata_test)[:,1]
     fpr, tpr, _ = roc_curve(fold['FRD_IND'], mod_test3)
