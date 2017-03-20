@@ -465,7 +465,7 @@ for i in range(1,11):
         #finding the fraudulent transactions in synthetic data
         fraud_trans = syntheticdata[syntheticdata.iloc[:,-1] == 1]
         #sampling the fraud transactions to include amount needed
-        add_fraud = fraud_trans.sample(n=num_fraud_trans, replcae=True)
+        add_fraud = fraud_trans.sample(n=num_fraud_trans, replace=True)
         #adding fraud transactions back to df1
         df1=pd.concat([df1,add_fraud],axis=0)
 
