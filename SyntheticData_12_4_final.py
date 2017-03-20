@@ -635,12 +635,13 @@ fold_n=[1,4,7,10]
 
 colors = cycle(['cyan', 'indigo', 'seagreen','darkorange'])
 folds_list=[all_fold_oot[0],all_fold_oot[3],all_fold_oot[6],all_fold_oot[9]]
-model_list2=[model_list[0],model_list[0],model_list[0],model_list[0]]
+firstmod=model_list[0]
 
-for l, color, z in zip(folds_list, colors, model_list2):
+
+for l, color, z in zip(folds_list, colors):
     syntheticdata_test=l.drop('FRD_IND',axis=1)
     #mod_test2 = z.predict(syntheticdata_test)
-    mod_test3 = z.predict_proba(syntheticdata_test)[:,1]
+    mod_test3 = firstmod.predict_proba(syntheticdata_test)[:,1]
     #cmfull=confusion_matrix(l['FRD_IND'],mod_test2)
     fpr, tpr, _ = roc_curve(l['FRD_IND'], mod_test3)
     #fpr, tpr, thresholds = roc_curve(l['FRD_IND'], mod_test3, pos_label=2)
