@@ -186,7 +186,11 @@ for i in range(1,11):
         #find number of fraud transactions needed
         num_fraud_trans=pct_fraud_needed*len(df1)
         num_fraud_trans=num_fraud_trans.astype(int)
-        add_fraud=syntheticdata.sample(n=num_fraud_trans,replace=True)
+        #finding the fraudulent transactions in synthetic data
+        fraud_trans = syntheticdata[syntheticdata.iloc[:,-1] == 1]
+        #sampling the fraud transactions to include amount needed
+        add_fraud = fraud_trans.sample(n=num_fraud_trans, replace=True)
+        #adding fraud transactions back to df1
         df1=pd.concat([df1,add_fraud],axis=0)
 
     #split into training, 'testing' (finding the adversarial best strategy data frame), out of time (validation set)
@@ -458,7 +462,11 @@ for i in range(1,11):
         #find number of fraud transactions needed
         num_fraud_trans=pct_fraud_needed*len(df1)
         num_fraud_trans=num_fraud_trans.astype(int)
-        add_fraud=syntheticdata.sample(n=num_fraud_trans,replace=True)
+        #finding the fraudulent transactions in synthetic data
+        fraud_trans = syntheticdata[syntheticdata.iloc[:,-1] == 1]
+        #sampling the fraud transactions to include amount needed
+        add_fraud = fraud_trans.sample(n=num_fraud_trans, replcae=True)
+        #adding fraud transactions back to df1
         df1=pd.concat([df1,add_fraud],axis=0)
 
  
