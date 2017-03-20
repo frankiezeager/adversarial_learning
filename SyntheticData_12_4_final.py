@@ -387,7 +387,7 @@ plt.clf()
 for fold, model in  zip(all_fold_oot, model_list):
     syntheticdata_test=fold.drop('FRD_IND',axis=1)
     mod_test3 = model.predict_proba(syntheticdata_test)[:,1]
-    fpr, tpr, _ = roc_curve(l['FRD_IND'], mod_test3)
+    fpr, tpr, _ = roc_curve(fold['FRD_IND'], mod_test3)
     print("The Outside of Time Sample AUC score is:", roc_auc_score(l['FRD_IND'],mod_test3 ))  
 
 
@@ -667,11 +667,12 @@ plt.legend(loc="lower right")
 #savefig('~/adversarial_learning/out_of_time_roc.png',bbox_inches='tight')
 plt.savefig('out_of_time_roc_no_change_15pct.png',bbox_inches='tight')
 
+
 #print all AUCs
 for fold, model in  zip(all_fold_oot, model_list):
     syntheticdata_test=fold.drop('FRD_IND',axis=1)
     mod_test3 = model.predict_proba(syntheticdata_test)[:,1]
-    fpr, tpr, _ = roc_curve(l['FRD_IND'], mod_test3)
+    fpr, tpr, _ = roc_curve(fold['FRD_IND'], mod_test3)
     print("The Outside of Time Sample AUC score is:", roc_auc_score(l['FRD_IND'],mod_test3 ))  
 ####
 
