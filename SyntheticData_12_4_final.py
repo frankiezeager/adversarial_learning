@@ -639,7 +639,7 @@ folds_list=[all_fold_oot[0],all_fold_oot[3],all_fold_oot[6],all_fold_oot[9]]
 firstmod=model_list[0]
 
 
-for l, color, z in zip(folds_list, colors):
+for l, color in zip(folds_list, colors):
     syntheticdata_test=l.drop('FRD_IND',axis=1)
     #mod_test2 = z.predict(syntheticdata_test)
     mod_test3 = firstmod.predict_proba(syntheticdata_test)[:,1]
