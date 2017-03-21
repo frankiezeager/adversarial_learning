@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+
 import pandas as pd
 import numpy as np
 import math
@@ -676,7 +677,7 @@ for fold in all_fold_oot:
     syntheticdata_test=fold.drop('FRD_IND',axis=1)
     mod_test3 = model.predict_proba(syntheticdata_test)[:,1]
     fpr, tpr, _ = roc_curve(fold['FRD_IND'], mod_test3)
-    print("The Outside of Time Sample AUC score is:", roc_auc_score(l['FRD_IND'],mod_test3 ))  
+    print("The Outside of Time Sample AUC score is:", roc_auc_score(fold['FRD_IND'],mod_test3 ))  
 ####
 
 
