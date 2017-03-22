@@ -30,88 +30,7 @@ plt.switch_backend('agg')
 
 colnames = ['AUTH_ID','ACCT_ID_TOKEN','FRD_IND','ACCT_ACTVN_DT','ACCT_AVL_CASH_BEFORE_AMT','ACCT_AVL_MONEY_BEFORE_AMT','ACCT_CL_AMT','ACCT_CURR_BAL','ACCT_MULTICARD_IND','ACCT_OPEN_DT','ACCT_PROD_CD','ACCT_TYPE_CD','ADR_VFCN_FRMT_CD','ADR_VFCN_RESPNS_CD','APPRD_AUTHZN_CNT','APPRD_CASH_AUTHZN_CNT','ARQC_RSLT_CD','AUTHZN_ACCT_STAT_CD','AUTHZN_AMT','AUTHZN_CATG_CD','AUTHZN_CHAR_CD','AUTHZN_OPSET_ID','AUTHZN_ORIG_SRC_ID','AUTHZN_OUTSTD_AMT','AUTHZN_OUTSTD_CASH_AMT','AUTHZN_RQST_PROC_CD','AUTHZN_RQST_PROC_DT','AUTHZN_RQST_PROC_TM','AUTHZN_RQST_TYPE_CD','AUTHZN_TRMNL_PIN_CAPBLT_NUM','AVG_DLY_AUTHZN_AMT','CARD_VFCN_2_RESPNS_CD','CARD_VFCN_2_VLDTN_DUR','CARD_VFCN_MSMT_REAS_CD','CARD_VFCN_PRESNC_CD','CARD_VFCN_RESPNS_CD','CARD_VFCN2_VLDTN_CD','CDHLDR_PRES_CD','CRCY_CNVRSN_RT','ELCTR_CMRC_IND_CD','HOME_PHN_NUM_CHNG_DUR','HOTEL_STAY_CAR_RENTL_DUR','LAST_ADR_CHNG_DUR','LAST_PLSTC_RQST_REAS_CD','MRCH_CATG_CD','MRCH_CNTRY_CD','NEW_USER_ADDED_DUR','PHN_CHNG_SNC_APPN_IND','PIN_BLK_CD','PIN_VLDTN_IND','PLSTC_ACTVN_DT','PLSTC_ACTVN_REQD_IND','PLSTC_FRST_USE_TS','PLSTC_ISU_DUR','PLSTC_PREV_CURR_CD','PLSTC_RQST_TS','POS_COND_CD','POS_ENTRY_MTHD_CD','RCURG_AUTHZN_IND','RVRSL_IND','SENDR_RSIDNL_CNTRY_CD','SRC_CRCY_CD','SRC_CRCY_DCML_PSN_NUM','TRMNL_ATTNDNC_CD','TRMNL_CAPBLT_CD','TRMNL_CLASFN_CD','TRMNL_ID','TRMNL_PIN_CAPBLT_CD','DISTANCE_FROM_HOME']
 random.seed(1575)
-#df = pd.read_csv('/Users/frankiezeager/Documents/Graduate School/Capstone/code/training_part_10_of_10.txt', delimiter='|',header=None, names=colnames)
-#df1 = df.sample(n=1000000)
 
-#read from EC2 instance memory
-#files=[]
-#for i in range(1,11):
-#    name='df_'+str(i)
-#    file='training_part_0'+str(i)+'_of_10.txt'
-#    full_path='~/adversarial_learning/'+file
-#    name=pd.read_csv(full_path, delimiter='|',header=None, names=colnames)
-#    files.append(name)
-
-#reading from EC2 instance memory and appending files to hdf5 object
-#homedir = os.path.expanduser(os.getenv('USERPROFILE'))
-#filename = homedir + '/adversarial_learning/df.h5'
-#if using unix then use the filepath below
-#filename = '/home/ec2-user/adversarial_learning/df.h5'
-#store = pd.HDFStore(filename)
-#for i in range(1, 11):
-#    root_dir = '/home/ec2-user/adversarial_learning/'
-#    #if using unix change the syntax for root directory above
-#    file='training_part_0'+str(i)+'_of_10.txt'
-#    filepath = os.path.join(root_dir, file)
-#    datafile=pd.read_csv(filepath, delimiter='|',header=None, names=colnames)
-#    store.append('data', datafile)
-#store.close()
-#
-#store = pd.HDFStore(filename)
-#df1 = store['data']
-
-#create one file from all the training instances
-#df1=pd.concat(files)
-
-#first sort everything by date
-#df1 = df1.sort_values(['AUTHZN_RQST_PROC_DT'])
-#
-##convert these two columns from Y and N to 1 and 0
-#df1[['FRD_IND','RCURG_AUTHZN_IND']].replace(['Y', 'N'], [1, 0], inplace=True)
-#
-##convert column type to numeric
-#df1['RCURG_AUTHZN_IND'] = df1['RCURG_AUTHZN_IND'].convert_objects(convert_numeric=True)
-#
-##convert columns to categorical
-#df1[['MRCH_CATG_CD', 'POS_ENTRY_MTHD_CD']] = df1[['MRCH_CATG_CD', 'POS_ENTRY_MTHD_CD']].astype('category')
-#
-##only select needed columns
-#t_ind = [2, 7, 14, 18, 23, 30, 44, 53, 57, 58, 68]
-#
-##cols = pd.DataFrame(j.iloc[:,t_ind])
-#df1 = pd.DataFrame(df1.iloc[:,t_ind])
-#
-#df1 = pd.concat([df1, pd.get_dummies(df1['MRCH_CATG_CD'],prefix = 'MRCH_CATG_CD_').astype(np.int8)], 
-#                              axis=1)
-#
-#df1 = pd.concat([df1, pd.get_dummies(df1['POS_ENTRY_MTHD_CD'],prefix = 'POS_ENTRY_MTHD_CD_').astype(np.int8)], 
-#                              axis=1)
-#the function below processes df1 in chunks, creates dummy values for certain columns and concatenates them at the end
-#chunk_size = math.floor(df1.shape[0]/5)
-#chunks = len(df1) // chunk_size
-#df_list = np.array_split(df1, chunks)
-#df_x = []
-#for df_chunk in enumerate(df_list):
-#    x = pd.get_dummies(df_chunk, prefix=['MRCH_CATG_CD_', 'POS_ENTRY_MTHD_CD_'], columns=['MRCH_CATG_CD', 'POS_ENTRY_MTHD_CD']).astype(np.int8)
-#    df_x.append(x)
-
-#df1 = pd.concat(df_x, axis=0) #concatenate the processed chunks back together
-#del df_x  #Free-up memory
-
-
-
-#creation of folds
-#fold_size = math.floor(df1.shape[0]/5)
-#folds = []
-#for f, F_t in df1.groupby(np.arange(len(df1)) // fold_size):
-#    if (len(F_t)==fold_size):
-#        folds.append(F_t)
-#for q in folds:
-#    q.reindex(np.random.permutation(q.index))
-#folds2=folds
-#folds3=folds  
-        
-        
 iteration_num = 0
 
 listFNR=[]
@@ -159,11 +78,7 @@ for i in range(1,11):
     df1['FRD_IND']=fraud_list
 
     col_list=df1.columns.values.tolist()
-
-    
-
- 
-    
+   
 #    #convert column type to numeric
     df1['RCURG_AUTHZN_IND'] = df1['RCURG_AUTHZN_IND'].convert_objects(convert_numeric=True)
     df1['FRD_IND'] = df1['FRD_IND'].convert_objects(convert_numeric=True)
@@ -317,29 +232,7 @@ for i in range(1,11):
     syntheticdata.columns=col_list
     #delete data frame to make more space in memory
     del df1
-#    
-#    #take all of the synthetic data as an out-of-time sample
-#    allsynthetic_sets.append(syntheticdata)
-#
-#    #take all the fraudulent transactions of best strategy batch and add it to the next fold
-#    fraud_trans = syntheticdata[syntheticdata.iloc[:,-1] == 1]
-#    #append the fraud transactions to fold+1
-#    if (iteration_num+1)<len(folds):
-#        fraud_trans = fraud_trans.sample(n=fraud_needed)
-#        folds[iteration_num+1]=pd.concat([folds[iteration_num+1], fraud_trans], axis=0)
-#        iteration_num = iteration_num+ 1
-#        print(iteration_num)
 
-
-
-#plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
-#plt.xlim([-0.05, 1.05])
-#plt.ylim([-0.05, 1.05])
-#plt.xlabel('False Positive Rate')
-#plt.ylabel('True Positive Rate')
-#plt.title('ROC Test')
-#plt.legend(loc="lower right")
-#plt.show()
 
 
 #having three out-of-time sets from synthetic data
@@ -372,7 +265,7 @@ plt.xlim([-0.05, 1.05])
 plt.ylim([-0.05, 1.05])
 plt.xlabel('False Positive Rate')
 plt.ylabel('True Positive Rate')
-plt.title('ROC Test')
+plt.title('ROC Curve with Adversarial Learning')
 plt.legend(loc="lower right")
 #plt.show()
 
@@ -392,7 +285,7 @@ for fold, model in  zip(all_fold_oot, model_list):
     print("The Outside of Time Sample AUC score is:", roc_auc_score(fold['FRD_IND'],mod_test3 ))  
 
 
-##### Model Stays the Same, Adversary Changes
+##### MODEL STAYS THE SAME, ADVERSARY CHANGES###############################################################################################################
 #make sure the seed is set
 random.seed(1345)      
         
@@ -606,28 +499,7 @@ for i in range(1,11):
     #delete data frame to make more space in memory
     del df1
 #    
-#    #take all of the synthetic data as an out-of-time sample
-#    allsynthetic_sets.append(syntheticdata)
-#
-#    #take all the fraudulent transactions of best strategy batch and add it to the next fold
-#    fraud_trans = syntheticdata[syntheticdata.iloc[:,-1] == 1]
-#    #append the fraud transactions to fold+1
-#    if (iteration_num+1)<len(folds):
-#        fraud_trans = fraud_trans.sample(n=fraud_needed)
-#        folds[iteration_num+1]=pd.concat([folds[iteration_num+1], fraud_trans], axis=0)
-#        iteration_num = iteration_num+ 1
-#        print(iteration_num)
 
-
-
-#plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
-#plt.xlim([-0.05, 1.05])
-#plt.ylim([-0.05, 1.05])
-#plt.xlabel('False Positive Rate')
-#plt.ylabel('True Positive Rate')
-#plt.title('ROC Test')
-#plt.legend(loc="lower right")
-#plt.show()
 
 #remove previous plot
 
@@ -663,7 +535,7 @@ plt.xlim([-0.05, 1.05])
 plt.ylim([-0.05, 1.05])
 plt.xlabel('False Positive Rate')
 plt.ylabel('True Positive Rate')
-plt.title('ROC Test')
+plt.title('ROC Curve without Adversarial Learning')
 plt.legend(loc="lower right")
 #plt.show()
 
