@@ -49,10 +49,7 @@ for i in range(1,11):
     #read in the data file
     df1=pd.read_csv('/home/ec2-user/adversarial_learning/'+'training_part_0'+str(i)+'_of_10.txt',delimiter='|',header=None, names=colnames)
     #df1=pd.read_csv(str('/Users/frankiezeager/Documents/Graduate School/Capstone/'+'training_part_0'+str(i)+'_of_10.txt'),delimiter='|',header=None, names=colnames)
-    
-    #take out any NaN's from the data set
-    df1=df1.dropna(axis=0)
-    
+        
     #sort values by date
     df1 = df1.sort_values(['AUTHZN_RQST_PROC_DT'])
     
@@ -72,6 +69,10 @@ for i in range(1,11):
     
     #cols = pd.DataFrame(j.iloc[:,t_ind])
     df1 = pd.DataFrame(df1.iloc[:,t_ind])
+    
+    #take out any NaN's from the data set
+    df1=df1.dropna(axis=0)
+    
     #convert these two columns from Y and N to 1 and 0,
     df1['FRD_IND'].replace(['Y', 'N'], [1, 0], inplace=True)
     df1['RCURG_AUTHZN_IND'].replace(['Y', 'N'], [1, 0], inplace=True)
