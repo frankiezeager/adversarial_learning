@@ -28,7 +28,7 @@ import os
 plt.switch_backend('agg')
 
 colnames = ['AUTH_ID','ACCT_ID_TOKEN','FRD_IND','ACCT_ACTVN_DT','ACCT_AVL_CASH_BEFORE_AMT','ACCT_AVL_MONEY_BEFORE_AMT','ACCT_CL_AMT','ACCT_CURR_BAL','ACCT_MULTICARD_IND','ACCT_OPEN_DT','ACCT_PROD_CD','ACCT_TYPE_CD','ADR_VFCN_FRMT_CD','ADR_VFCN_RESPNS_CD','APPRD_AUTHZN_CNT','APPRD_CASH_AUTHZN_CNT','ARQC_RSLT_CD','AUTHZN_ACCT_STAT_CD','AUTHZN_AMT','AUTHZN_CATG_CD','AUTHZN_CHAR_CD','AUTHZN_OPSET_ID','AUTHZN_ORIG_SRC_ID','AUTHZN_OUTSTD_AMT','AUTHZN_OUTSTD_CASH_AMT','AUTHZN_RQST_PROC_CD','AUTHZN_RQST_PROC_DT','AUTHZN_RQST_PROC_TM','AUTHZN_RQST_TYPE_CD','AUTHZN_TRMNL_PIN_CAPBLT_NUM','AVG_DLY_AUTHZN_AMT','CARD_VFCN_2_RESPNS_CD','CARD_VFCN_2_VLDTN_DUR','CARD_VFCN_MSMT_REAS_CD','CARD_VFCN_PRESNC_CD','CARD_VFCN_RESPNS_CD','CARD_VFCN2_VLDTN_CD','CDHLDR_PRES_CD','CRCY_CNVRSN_RT','ELCTR_CMRC_IND_CD','HOME_PHN_NUM_CHNG_DUR','HOTEL_STAY_CAR_RENTL_DUR','LAST_ADR_CHNG_DUR','LAST_PLSTC_RQST_REAS_CD','MRCH_CATG_CD','MRCH_CNTRY_CD','NEW_USER_ADDED_DUR','PHN_CHNG_SNC_APPN_IND','PIN_BLK_CD','PIN_VLDTN_IND','PLSTC_ACTVN_DT','PLSTC_ACTVN_REQD_IND','PLSTC_FRST_USE_TS','PLSTC_ISU_DUR','PLSTC_PREV_CURR_CD','PLSTC_RQST_TS','POS_COND_CD','POS_ENTRY_MTHD_CD','RCURG_AUTHZN_IND','RVRSL_IND','SENDR_RSIDNL_CNTRY_CD','SRC_CRCY_CD','SRC_CRCY_DCML_PSN_NUM','TRMNL_ATTNDNC_CD','TRMNL_CAPBLT_CD','TRMNL_CLASFN_CD','TRMNL_ID','TRMNL_PIN_CAPBLT_CD','DISTANCE_FROM_HOME']
-random.seed(1575)
+random.seed(1576)
 
 iteration_num = 0
 
@@ -108,13 +108,13 @@ for i in range(1,11):
     #60% training, 20% test, 20% validation
     
     #train, out_of_time, test=np.split(df1.sample(frac=1), [int(.6*len(df1)), int(.8*len(df1))])
-#    train,intermediate_set=train_test_split(df1,train_size=.6,test_size=.4,random_state=1575)
-#    test, out_of_time=train_test_split(intermediate_set, train_size=.5,test_size=.5,random_state=1575)
+#    train,intermediate_set=train_test_split(df1,train_size=.6,test_size=.4,random_state=1576)
+#    test, out_of_time=train_test_split(intermediate_set, train_size=.5,test_size=.5,random_state=1576)
 #    #delete intermediate set
 #    del intermediate_set
     
     #alternative method to find 60-20-20 train, test, validate but according to time order
-    def train_test_validate_split(df, train_percent=.6, validate_percent=.2, seed=1575):
+    def train_test_validate_split(df, train_percent=.6, validate_percent=.2, seed=1576):
         m = len(df)
         train_end = int(train_percent * m)
         validate_end = int(validate_percent * m) + train_end
@@ -166,7 +166,8 @@ for i in range(1,11):
     model_list.append(mod)
     testcol = test.drop('FRD_IND',axis=1)
     #testcol=testcol.fillna(method='ffill')
-    testcol[np.isnan(testcol)] = np.median(testcol[~np.isnan(testcol)])
+    testcol=testcol.dropna()
+    #testcol[np.isnan(testcol)] = np.median(testcol[~np.isnan(testcol)])
     mod_test = mod.predict(testcol)
 
 ###############################################################################
@@ -227,7 +228,7 @@ for i in range(1,11):
     #Implement SMOTE
     test_cols = best_fold.drop(labels='Strategy Number',axis=1)
     test_cols = test_cols.drop(labels='FRD_IND',axis=1)
-    smote = SMOTE(ratio=0.5, kind='regular',random_state=1575)
+    smote = SMOTE(ratio=0.5, kind='regular',random_state=1576)
     smox, smoy = smote.fit_sample(test_cols, best_fold.FRD_IND)
     smox = pd.DataFrame(smox)
     smoy = pd.DataFrame(smoy)
@@ -526,14 +527,15 @@ for i in range(1,11):
     
     
     #train, out_of_time, test=np.split(df1.sample(frac=1), [int(.6*len(df1)), int(.8*len(df1))])
-#    train,intermediate_set=train_test_split(df1,train_size=.6,test_size=.4,random_state=1575)
-#    test, out_of_time=train_test_split(intermediate_set, train_size=.5,test_size=.5,random_state=1575)
+#    train,intermediate_set=train_test_split(df1,train_size=.6,test_size=.4,random_state=1576)
+#    test, out_of_time=train_test_split(intermediate_set, train_size=.5,test_size=.5,random_state=1576)
 #    #delete intermediate set
 #    del intermediate_set
     
 
+
     #alternative method to find 60-20-20 train, test, validate but according to time order
-    def train_test_validate_split(df, train_percent=.6, validate_percent=.2, seed=1575):
+    def train_test_validate_split(df, train_percent=.6, validate_percent=.2, seed=1576):
         m = len(df)
         train_end = int(train_percent * m)
         validate_end = int(validate_percent * m) + train_end
@@ -642,7 +644,7 @@ for i in range(1,11):
     #Implement SMOTE
     test_cols = best_fold.drop(labels='Strategy Number',axis=1)
     test_cols = test_cols.drop(labels='FRD_IND',axis=1)
-    smote = SMOTE(ratio=0.5, kind='regular',random_state=1575)
+    smote = SMOTE(ratio=0.5, kind='regular',random_state=1576)
     smox, smoy = smote.fit_sample(test_cols, best_fold.FRD_IND)
     smox = pd.DataFrame(smox)
     smoy = pd.DataFrame(smoy)
