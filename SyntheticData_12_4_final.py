@@ -166,7 +166,8 @@ for i in range(1,11):
     model_list.append(mod)
     testcol = test.drop('FRD_IND',axis=1)
     #testcol=testcol.fillna(method='ffill')
-    testcol=testcol.dropna()
+    testcol.fillna(method='bfill',inplace=True)
+    
     #testcol[np.isnan(testcol)] = np.median(testcol[~np.isnan(testcol)])
     mod_test = mod.predict(testcol)
 
@@ -572,6 +573,7 @@ for i in range(1,11):
 #57- Point of Sale Entry Method (convert to factor)
 #58 - Recurring Charge (Relabel as 0/1)
 #68 - Distance from Home
+
     
     train_cols = train.drop('FRD_IND', axis=1) #columns for training
     
@@ -582,7 +584,7 @@ for i in range(1,11):
     mod = model_list[0]
     #model_list.append(mod)
     testcol = test.drop('FRD_IND',axis=1)
-
+    testcol.fillna(method='bfill',inplace=True)
     mod_test = mod.predict(testcol)
 
 ###############################################################################
