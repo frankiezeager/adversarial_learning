@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-
 import pandas as pd
 import numpy as np
 import math
@@ -216,6 +215,7 @@ for i in range(1,11):
         cols = cols.drop(labels='FRD_IND',axis=1)
         #cols=j.iloc[:,:-1] 
         #cols=cols.iloc[:,:-1]
+        cols.fillna(method='bfill',inplace=True)
         col_response = j.iloc[:,-2]
         pred = mod.predict(cols)
         cm = confusion_matrix(col_response, pred)
@@ -237,6 +237,7 @@ for i in range(1,11):
     syntheticdata.columns=col_list
     #delete data frame to make more space in memory
     del df1
+
 
 
 ############### ROC PLOTTING #####################################################################################################################################
@@ -302,9 +303,9 @@ def coverage_curve(df, target_variable_col, predicted_prob_fraud_col, trxn_amoun
     
     return df
 
-
+ilist=[1,4,7,10]
 #run coverage curve:   
-for fold,model,color in zip(folds_list,model_list2,colors):
+for fold,model,color,i in zip(folds_list,model_list2,colors,ilist):
     syntheticdata_test=fold.drop('FRD_IND',axis=1)
     model_predictions=model.predict_proba(syntheticdata_test)[:,1]
     fold['model_pred']=model_predictions
@@ -312,7 +313,7 @@ for fold,model,color in zip(folds_list,model_list2,colors):
     sorted_df = coverage_curve(fold, 'FRD_IND', 'model_pred', fold['AUTHZN_AMT'])
     
     # produce chart
-    plt.plot(sorted_df['Trxn_Cumulative'], sorted_df['Fraud_Cumulative'], color=color, label='ROC Round %d' % (fold_n[i_num]))
+    plt.plot(sorted_df['Trxn_Cumulative'], sorted_df['Fraud_Cumulative'], color=color, label='ROC Round '+str(i))
     plt.title('Coverage Curve with Adversarial Learning')
     plt.legend(loc="lower right")
 #save plot
@@ -631,6 +632,7 @@ for i in range(1,11):
         #cols=j.drop(j.columns[-1:-3], axis=1) 
         cols = j.drop(labels='Strategy Number',axis=1)
         cols = cols.drop(labels='FRD_IND',axis=1)
+        cols.fillna(method='bfill',inplace=True)
         #cols=j.iloc[:,:-1] 
         #cols=cols.iloc[:,:-1]
         col_response = j.iloc[:,-2]
@@ -710,7 +712,7 @@ for fold in all_fold_oot:
 ####
 
 #run coverage curve:   
-for fold,color in zip(folds_list,colors):
+for fold,color,i in zip(folds_list,colors,ilist):
     model=firstmod
     syntheticdata_test=fold.drop('FRD_IND',axis=1)
     model_predictions=model.predict_proba(syntheticdata_test)[:,1]
@@ -719,7 +721,7 @@ for fold,color in zip(folds_list,colors):
     sorted_df = coverage_curve(fold, 'FRD_IND', 'model_pred', fold['AUTHZN_AMT'])
     
     # produce chart
-    plt.plot(sorted_df['Trxn_Cumulative'], sorted_df['Fraud_Cumulative'], color=color, label='ROC Round %d' % (fold_n[i_num]))
+    plt.plot(sorted_df['Trxn_Cumulative'], sorted_df['Fraud_Cumulative'], color=color, label='ROC Round '+str(i))
     plt.title('Coverage Curve with Adversarial Learning')
     plt.legend(loc="lower right")
 #save plot
