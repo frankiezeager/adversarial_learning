@@ -49,7 +49,7 @@ for i in range(1,11):
     #read in the data file
     df1=pd.read_csv('/home/ec2-user/adversarial_learning/'+'training_part_0'+str(i)+'_of_10.txt',delimiter='|',header=None, names=colnames)
     #df1=pd.read_csv(str('/Users/frankiezeager/Documents/Graduate School/Capstone/'+'training_part_0'+str(i)+'_of_10.txt'),delimiter='|',header=None, names=colnames)
-        
+    #df1=pd.read_csv('/Users/frankiezeager/Documents/Graduate School/Capstone/training_part_01_of_10.txt',delimiter='|',header=None, names=colnames)
     #sort values by date
     df1 = df1.sort_values(['AUTHZN_RQST_PROC_DT'])
     
@@ -81,10 +81,12 @@ for i in range(1,11):
     df1['FRD_IND']=fraud_list
 
     col_list=df1.columns.values.tolist()
-   
-#    #convert column type to numeric
-    df1['RCURG_AUTHZN_IND'] = df1['RCURG_AUTHZN_IND'].apply(pd.to_numeric)
-    df1['FRD_IND'] = df1['FRD_IND'].apply(pd.to_numeric)
+   #take out any NaN's from the data set
+    df1=df1.dropna(axis=0)
+    
+    #convert column type to numeric
+    df1['RCURG_AUTHZN_IND'] = df1['RCURG_AUTHZN_IND'].convert_objects(convert_numeric=True)
+    df1['FRD_IND'] = df1['FRD_IND'].convert_objects(convert_numeric=True)
     
     if i!=1:
         #find percent fraud in current df
@@ -112,7 +114,7 @@ for i in range(1,11):
 #    del intermediate_set
     
     #alternative method to find 60-20-20 train, test, validate but according to time order
-    def train_test_validate_split(df, train_percent=.6, validate_percent=.2, seed=None):
+    def train_test_validate_split(df, train_percent=.6, validate_percent=.2, seed=1575):
         m = len(df)
         train_end = int(train_percent * m)
         validate_end = int(validate_percent * m) + train_end
@@ -132,12 +134,19 @@ for i in range(1,11):
     out_of_time.FRD_IND.map(dict(Y=1,N=0))
     out_of_time.RCURG_AUTHZN_IND.map(dict(Y=1,N=0))
     
+    #filling any NAs 
+    out_of_time=out_of_time.fillna(method='ffill')
+    
+    
     #convert column type to numeric
+    #df1['RCURG_AUTHZN_IND'] = df1['RCURG_AUTHZN_IND'].apply(pd.to_numeric)
+    #df1['FRD_IND'] = df1['FRD_IND'].apply(pd.to_numeric)
     out_of_time['RCURG_AUTHZN_IND'] = out_of_time['RCURG_AUTHZN_IND'].convert_objects(convert_numeric=True)
     out_of_time['FRD_IND'] = out_of_time['FRD_IND'].convert_objects(convert_numeric=True)
     all_fold_oot.append(out_of_time)
     
     test = test.sort_values(['AUTHZN_AMT']) #sorting by transaction amount
+
 #training the classifier
 #7-ACCT_CUR_BAL
 #14-Total Num. Authorizations
@@ -149,13 +158,15 @@ for i in range(1,11):
     
     train_cols = train.drop('FRD_IND', axis=1) #columns for training
     
+    
     #Logistic Regression
     logit = LogisticRegression(class_weight='balanced')
     
     mod = logit.fit(train_cols, train['FRD_IND'])
     model_list.append(mod)
     testcol = test.drop('FRD_IND',axis=1)
-
+    #testcol=testcol.fillna(method='ffill')
+    testcol[np.isnan(testcol)] = np.median(testcol[~np.isnan(testcol)])
     mod_test = mod.predict(testcol)
 
 ###############################################################################
@@ -216,7 +227,7 @@ for i in range(1,11):
     #Implement SMOTE
     test_cols = best_fold.drop(labels='Strategy Number',axis=1)
     test_cols = test_cols.drop(labels='FRD_IND',axis=1)
-    smote = SMOTE(ratio=0.5, kind='regular')
+    smote = SMOTE(ratio=0.5, kind='regular',random_state=1575)
     smox, smoy = smote.fit_sample(test_cols, best_fold.FRD_IND)
     smox = pd.DataFrame(smox)
     smoy = pd.DataFrame(smoy)
@@ -267,7 +278,6 @@ plt.savefig('out_of_time_roc_15pct.png',bbox_inches='tight')
 
 #remove plot
 plt.clf()
-
     
 #print all AUCs
 for fold, model in  zip(all_fold_oot, model_list):
@@ -275,8 +285,40 @@ for fold, model in  zip(all_fold_oot, model_list):
     mod_test3 = model.predict_proba(syntheticdata_test)[:,1]
     fpr, tpr, _ = roc_curve(fold['FRD_IND'], mod_test3)
     print("The Outside of Time Sample AUC score is:", roc_auc_score(fold['FRD_IND'],mod_test3 ))
+
+#coverage curve
+
+# define coverage_curve function
+def coverage_curve(df, target_variable_col, predicted_prob_fraud_col, trxn_amount_col):
+    df = df.sort_values(predicted_prob_fraud_col, ascending=False)
+    df['Fraud_Cumulative'] = df[target_variable_col].cumsum()*1.0 / df[target_variable_col].sum( )
+    df['TrxnCount'] = 1
+    df['Trxn_Cumulative'] = df['TrxnCount'].cumsum()*1.0 / df['TrxnCount'].sum( )
+    #df['Exposure'] = df[trxn_amount_col] * df[target_variable_col]
+    #df['Exposure_Cumulative'] = df['Exposure'].cumsum()*1.0 / df['Exposure'].sum( )
+    #df['FPrate_Cumulative'] = (df['TrxnCount'].cumsum()*1.0 - df[target_variable_col].cumsum()) / df[target_variable_col].cumsum()
     
+    return df
+
+
+#run coverage curve:   
+for fold,model,color in zip(folds_list,model_list2,colors):
+    syntheticdata_test=fold.drop('FRD_IND',axis=1)
+    model_predictions=model.predict_proba(syntheticdata_test)[:,1]
+    fold['model_pred']=model_predictions
+    # create sorted df
+    sorted_df = coverage_curve(fold, 'FRD_IND', 'model_pred', fold['AUTHZN_AMT'])
     
+    # produce chart
+    plt.plot(sorted_df['Trxn_Cumulative'], sorted_df['Fraud_Cumulative'], color=color, label='ROC Round %d' % (fold_n[i_num]))
+    plt.title('Coverage Curve with Adversarial Learning')
+    plt.legend(loc="lower right")
+#save plot
+plt.savefig('coverage_adv_learn_1.png',bbox_inches='tight')
+
+#remove plot
+plt.clf()
+
  #################################################################################################################################################################################   
  #different scenario where testing the trained adversary's strategies over 10 rounds of playing the game back on the first model   
 i_num = 0
@@ -379,7 +421,24 @@ for fold in all_fold_oot:
     fpr, tpr, _ = roc_curve(fold['FRD_IND'], mod_test3)
     print("The Outside of Time Sample AUC score is:", roc_auc_score(fold['FRD_IND'],mod_test3 )) 
     
+ #run coverage curve:   
+for fold,color in zip(folds_list,colors):
+    model=model_list[9]
+    syntheticdata_test=fold.drop('FRD_IND',axis=1)
+    model_predictions=model.predict_proba(syntheticdata_test)[:,1]
+    fold['model_pred']=model_predictions
+    # create sorted df
+    sorted_df = coverage_curve(fold, 'FRD_IND', 'model_pred', fold['AUTHZN_AMT'])
     
+    # produce chart
+    plt.plot(sorted_df['Trxn_Cumulative'], sorted_df['Fraud_Cumulative'], color=color, label='ROC Round %d' % (fold_n[i_num]))
+    plt.title('Coverage Curve with Adversarial Learning')
+    plt.legend(loc="lower right")
+#save plot
+plt.savefig('coverage_adv_learn_2.png',bbox_inches='tight')
+
+#remove plot
+plt.clf()   
     
 
     
@@ -439,8 +498,10 @@ for i in range(1,11):
     col_list=df1.columns.values.tolist()
 
 #    #convert column type to numeric
-    df1['RCURG_AUTHZN_IND'] = df1['RCURG_AUTHZN_IND'].apply(pd.to_numeric)
-    df1['FRD_IND'] = df1['FRD_IND'].apply(pd.to_numeric)
+    #df1['RCURG_AUTHZN_IND'] = df1['RCURG_AUTHZN_IND'].apply(pd.to_numeric)
+    #df1['FRD_IND'] = df1['FRD_IND'].apply(pd.to_numeric)
+    df1['RCURG_AUTHZN_IND'] = df1['RCURG_AUTHZN_IND'].convert_objects(convert_numeric=True)
+    df1['FRD_IND'] = df1['FRD_IND'].convert_objects(convert_numeric=True)
     
     
     if i!=1:
@@ -472,7 +533,7 @@ for i in range(1,11):
     
 
     #alternative method to find 60-20-20 train, test, validate but according to time order
-    def train_test_validate_split(df, train_percent=.6, validate_percent=.2, seed=None):
+    def train_test_validate_split(df, train_percent=.6, validate_percent=.2, seed=1575):
         m = len(df)
         train_end = int(train_percent * m)
         validate_end = int(validate_percent * m) + train_end
@@ -581,7 +642,7 @@ for i in range(1,11):
     #Implement SMOTE
     test_cols = best_fold.drop(labels='Strategy Number',axis=1)
     test_cols = test_cols.drop(labels='FRD_IND',axis=1)
-    smote = SMOTE(ratio=0.5, kind='regular')
+    smote = SMOTE(ratio=0.5, kind='regular',random_state=1575)
     smox, smoy = smote.fit_sample(test_cols, best_fold.FRD_IND)
     smox = pd.DataFrame(smox)
     smoy = pd.DataFrame(smoy)
@@ -590,6 +651,7 @@ for i in range(1,11):
     #delete data frame to make more space in memory
     del df1
 #    
+
 
 
 #remove previous plot
@@ -643,5 +705,22 @@ for fold in all_fold_oot:
     print("The Outside of Time Sample AUC score is:", roc_auc_score(fold['FRD_IND'],mod_test3 ))  
 ####
 
+#run coverage curve:   
+for fold,color in zip(folds_list,colors):
+    model=firstmod
+    syntheticdata_test=fold.drop('FRD_IND',axis=1)
+    model_predictions=model.predict_proba(syntheticdata_test)[:,1]
+    fold['model_pred']=model_predictions
+    # create sorted df
+    sorted_df = coverage_curve(fold, 'FRD_IND', 'model_pred', fold['AUTHZN_AMT'])
+    
+    # produce chart
+    plt.plot(sorted_df['Trxn_Cumulative'], sorted_df['Fraud_Cumulative'], color=color, label='ROC Round %d' % (fold_n[i_num]))
+    plt.title('Coverage Curve with Adversarial Learning')
+    plt.legend(loc="lower right")
+#save plot
+plt.savefig('coverage_no_change.png',bbox_inches='tight')
 
-##
+#remove plot
+plt.clf()
+
