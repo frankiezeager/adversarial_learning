@@ -287,7 +287,7 @@ for fold, model in  zip(all_fold_oot, model_list):
     syntheticdata_test=fold.drop('FRD_IND',axis=1)
     mod_test3 = model.predict_proba(syntheticdata_test)[:,1]
     fpr, tpr, _ = roc_curve(fold['FRD_IND'], mod_test3)
-    print("The Outside of Time Sample AUC score is:", roc_auc_score(fold['FRD_IND'],mod_test3 ))
+    print("The Outside of Time Sample AUC score (model 1) is:", roc_auc_score(fold['FRD_IND'],mod_test3 ))
 
 #coverage curve
 
@@ -306,8 +306,8 @@ def coverage_curve(df, target_variable_col, predicted_prob_fraud_col, trxn_amoun
 ilist=[1,4,7,10]
 #run coverage curve:   
 for fold,model,color,i in zip(folds_list,model_list2,colors,ilist):
-    syntheticdata_test=fold.drop('FRD_IND',axis=1)
-    model_predictions=model.predict_proba(syntheticdata_test)[:,1]
+    syntheticdata_test2=fold.drop('FRD_IND',axis=1)
+    model_predictions=model.predict_proba(syntheticdata_test2)[:,1]
     fold['model_pred']=model_predictions
     # create sorted df
     sorted_df = coverage_curve(fold, 'FRD_IND', 'model_pred', fold['AUTHZN_AMT'])
@@ -327,11 +327,14 @@ plt.clf()
 i_num = 0
 fold_n=[1,4,7,10]
 
+
+
 colors = cycle(['cyan', 'indigo', 'seagreen','darkorange'])
 folds_list=[all_fold_oot[0],all_fold_oot[3],all_fold_oot[6],all_fold_oot[9]]
 firstmod = model_list[0]
 for l, color in zip(folds_list, colors):
     syntheticdata_test=l.drop('FRD_IND',axis=1)
+    #syntheticdata_test=syntheticdata_test.drop('model_pred',axis=1)
     #mod_test2 = z.predict(syntheticdata_test)
     mod_test3 = firstmod.predict_proba(syntheticdata_test)[:,1]
     #cmfull=confusion_matrix(l['FRD_IND'],mod_test2)
@@ -371,7 +374,7 @@ for fold in all_fold_oot:
     syntheticdata_test=fold.drop('FRD_IND',axis=1)
     mod_test3 = model.predict_proba(syntheticdata_test)[:,1]
     fpr, tpr, _ = roc_curve(fold['FRD_IND'], mod_test3)
-    print("The Outside of Time Sample AUC score is:", roc_auc_score(fold['FRD_IND'],mod_test3 )) 
+    print("The Outside of Time Sample AUC score (model 2) is:", roc_auc_score(fold['FRD_IND'],mod_test3 )) 
     
     
 ####################################################################################################################################################################    
