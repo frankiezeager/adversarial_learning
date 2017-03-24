@@ -305,23 +305,7 @@ def coverage_curve(df, target_variable_col, predicted_prob_fraud_col, trxn_amoun
     return df
 
 ilist=[1,4,7,10]
-#run coverage curve:   
-for fold,model,color,i in zip(folds_list,model_list2,colors,ilist):
-    syntheticdata_test2=fold.drop('FRD_IND',axis=1)
-    model_predictions=model.predict_proba(syntheticdata_test2)[:,1]
-    fold['model_pred']=model_predictions
-    # create sorted df
-    sorted_df = coverage_curve(fold, 'FRD_IND', 'model_pred', fold['AUTHZN_AMT'])
-    
-    # produce chart
-    plt.plot(sorted_df['Trxn_Cumulative'], sorted_df['Fraud_Cumulative'], color=color, label='ROC Round '+str(i))
-    plt.title('Coverage Curve with Adversarial Learning')
-    plt.legend(loc="lower right")
-#save plot
-plt.savefig('coverage_adv_learn_1.png',bbox_inches='tight')
 
-#remove plot
-plt.clf()
 
  #################################################################################################################################################################################   
  #different scenario where testing the trained adversary's strategies over 10 rounds of playing the game back on the first model   
@@ -333,14 +317,14 @@ folds_list=[all_fold_oot[0],all_fold_oot[3],all_fold_oot[6],all_fold_oot[9]]
 firstmod = model_list[0]
 for l, color in zip(folds_list, colors):
     syntheticdata_test=l.drop('FRD_IND',axis=1)
-    syntheticdata_test=syntheticdata_test.drop('model_pred',axis=1)
+    #syntheticdata_test=syntheticdata_test.drop('model_pred',axis=1)
     #mod_test2 = z.predict(syntheticdata_test)
     mod_test3 = firstmod.predict_proba(syntheticdata_test)[:,1]
     #cmfull=confusion_matrix(l['FRD_IND'],mod_test2)
     fpr, tpr, _ = roc_curve(l['FRD_IND'], mod_test3)
     #fpr, tpr, thresholds = roc_curve(l['FRD_IND'], mod_test3, pos_label=2)
     #print("The FNR is:", cmfull[0][1])
-    print("The Outside of Time Sample AUC score is (model 2):", roc_auc_score(l['FRD_IND'],mod_test3 ))
+    print("The Outside of Time Sample AUC score is:", roc_auc_score(l['FRD_IND'],mod_test3 ))
     #aucscore = roc_auc_score(l['FRD_IND'],mod_test2 )
     #getting predicted probablilites for fraud
     #mod_test3 = z.predict_proba(syntheticdata_test)[:,1]
@@ -366,89 +350,118 @@ plt.savefig('out_of_time_roc_firstmodelstrategy_15pct.png',bbox_inches='tight')
 #remove plot
 plt.clf()
 
+
     
 #print all AUCs 
 for fold in all_fold_oot:
-    model=model_list[0] #first model
-    syntheticdata_test=fold.drop('FRD_IND',axis=1)
-    #syntheticdata_test=syntheticdata_test.drop('model_pred',axis=1)
-    mod_test3 = model.predict_proba(syntheticdata_test)[:,1]
-    fpr, tpr, _ = roc_curve(fold['FRD_IND'], mod_test3)
-    print("The Outside of Time Sample AUC score (model 2) is:", roc_auc_score(fold['FRD_IND'],mod_test3 )) 
-    
-    
-####################################################################################################################################################################    
-#the next scenario is testing the trained adversary's strategies over 10 rounds of playing the game on the last model 
-i_num = 0
-fold_n=[1,4,7,10]
+   model=model_list[0] #first model
+   syntheticdata_test=fold.drop('FRD_IND',axis=1)
+   #syntheticdata_test=syntheticdata_test.drop('model_pred',axis=1)
+   mod_test3 = model.predict_proba(syntheticdata_test)[:,1]
+   fpr, tpr, _ = roc_curve(fold['FRD_IND'], mod_test3)
+   print("The Outside of Time Sample AUC score (model 2) is:", roc_auc_score(fold['FRD_IND'],mod_test3 )) 
 
-colors = cycle(['cyan', 'indigo', 'seagreen','darkorange'])
-folds_list=[all_fold_oot[0],all_fold_oot[3],all_fold_oot[6],all_fold_oot[9]]
-lastmod = model_list[9]
-for l, color in zip(folds_list, colors):
-    syntheticdata_test=l.drop('FRD_IND',axis=1)
-    syntheticdata_test=syntheticdata_test.drop('model_pred',axis=1)
-    #mod_test2 = z.predict(syntheticdata_test)
-    mod_test3 = lastmod.predict_proba(syntheticdata_test)[:,1]
-    #cmfull=confusion_matrix(l['FRD_IND'],mod_test2)
-    fpr, tpr, _ = roc_curve(l['FRD_IND'], mod_test3)
-    #fpr, tpr, thresholds = roc_curve(l['FRD_IND'], mod_test3, pos_label=2)
-    #print("The FNR is:", cmfull[0][1])
-    print("The Outside of Time Sample AUC score is:", roc_auc_score(l['FRD_IND'],mod_test3 ))
-    #aucscore = roc_auc_score(l['FRD_IND'],mod_test2 )
-    #getting predicted probablilites for fraud
-    #mod_test3 = z.predict_proba(syntheticdata_test)[:,1]
-    #fpr1, tpr1, _ = roc_curve(l['FRD_IND'], mod_test3)
-    aucscore = auc(fpr, tpr )
-    plt.plot(fpr, tpr, lw=lw, color=color, label='ROC Round %d (area = %0.2f)' % (fold_n[i_num], aucscore))
-    i_num += 1
-
-#adding ROC curve code
-plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
-plt.xlim([-0.05, 1.05])
-plt.ylim([-0.05, 1.05])
-plt.xlabel('False Positive Rate')
-plt.ylabel('True Positive Rate')
-plt.title('ROC Curve with Adversarial Learning: Performance on Last Model')
-plt.legend(loc="lower right")
-#plt.show()
-
-
-#savefig('~/adversarial_learning/out_of_time_roc.png',bbox_inches='tight')
-plt.savefig('out_of_time_roc_lastmodelstrategy_15pct.png',bbox_inches='tight')
-
-#remove plot
-plt.clf()
-
-#print all AUCs
-for fold in all_fold_oot:
-    model=model_list[9] #last model
-    syntheticdata_test=fold.drop('FRD_IND',axis=1)
-    syntheticdata_test=syntheticdata_test.drop('model_pred',axis=1)
-    mod_test3 = model.predict_proba(syntheticdata_test)[:,1]
-    fpr, tpr, _ = roc_curve(fold['FRD_IND'], mod_test3)
-    print("The Outside of Time Sample AUC score is:", roc_auc_score(fold['FRD_IND'],mod_test3 )) 
-    
+folds_list2=[all_fold_oot[0],all_fold_oot[3],all_fold_oot[6],all_fold_oot[9]]    
  #run coverage curve:   
-for fold,color in zip(folds_list,colors):
-    model=model_list[9]
-    syntheticdata_test=fold.drop('FRD_IND',axis=1)
-    syntheticdata_test=syntheticdata_test.drop('model_pred',axis=1)
-    model_predictions=model.predict_proba(syntheticdata_test)[:,1]
-    fold['model_pred']=model_predictions
+for fold,model,color,i in zip(folds_list2,model_list2,colors,ilist):
+    syntheticdata_test2=fold.drop('FRD_IND',axis=1)
+    model_predictions=model.predict_proba(syntheticdata_test2)[:,1]
+    new_fold=fold
+    new_fold['model_pred']=model_predictions
     # create sorted df
-    sorted_df = coverage_curve(fold, 'FRD_IND', 'model_pred', fold['AUTHZN_AMT'])
-    
+    sorted_df = coverage_curve(new_fold, 'FRD_IND', 'model_pred', new_fold['AUTHZN_AMT'])
+    #drop model_pred
+    new_fold=new_fold.drop('model_pred',axis=1)
     # produce chart
-    plt.plot(sorted_df['Trxn_Cumulative'], sorted_df['Fraud_Cumulative'], color=color, label='ROC Round %d' % (fold_n[i_num]))
+    plt.plot(sorted_df['Trxn_Cumulative'], sorted_df['Fraud_Cumulative'], color=color, label='ROC Round '+str(i))
     plt.title('Coverage Curve with Adversarial Learning')
     plt.legend(loc="lower right")
+    
 #save plot
-plt.savefig('coverage_adv_learn_2.png',bbox_inches='tight')
+plt.savefig('coverage_adv_learn_1.png',bbox_inches='tight')
 
 #remove plot
 plt.clf()   
-    
+####################################################################################################################################################################    
+#the next scenario is testing the trained adversary's strategies over 10 rounds of playing the game on the last model 
+
+
+####TRY THIS LATER####
+
+#i_num = 0
+#fold_n=[1,4,7,10]
+#
+#colors = cycle(['cyan', 'indigo', 'seagreen','darkorange'])
+#folds_list=[all_fold_oot[0],all_fold_oot[3],all_fold_oot[6],all_fold_oot[9]]
+#lastmod = model_list[9]
+#for l, color in zip(folds_list, colors):
+#    syntheticdata_t=l.drop('FRD_IND',axis=1)
+#    #syntheticdata_test=syntheticdata_test.drop('model_pred',axis=1)
+#    #mod_test2 = z.predict(syntheticdata_test)
+#    mod_test3 = lastmod.predict_proba(syntheticdata_t)[:,1]
+#    #cmfull=confusion_matrix(l['FRD_IND'],mod_test2)
+#    fpr, tpr, _ = roc_curve(l['FRD_IND'], mod_test3)
+#    #fpr, tpr, thresholds = roc_curve(l['FRD_IND'], mod_test3, pos_label=2)
+#    #print("The FNR is:", cmfull[0][1])
+#    print("The Outside of Time Sample AUC score is:", roc_auc_score(l['FRD_IND'],mod_test3 ))
+#    #aucscore = roc_auc_score(l['FRD_IND'],mod_test2 )
+#    #getting predicted probablilites for fraud
+#    #mod_test3 = z.predict_proba(syntheticdata_test)[:,1]
+#    #fpr1, tpr1, _ = roc_curve(l['FRD_IND'], mod_test3)
+#    aucscore = auc(fpr, tpr )
+#    plt.plot(fpr, tpr, lw=lw, color=color, label='ROC Round %d (area = %0.2f)' % (fold_n[i_num], aucscore))
+#    i_num += 1
+#
+##adding ROC curve code
+#plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
+#plt.xlim([-0.05, 1.05])
+#plt.ylim([-0.05, 1.05])
+#plt.xlabel('False Positive Rate')
+#plt.ylabel('True Positive Rate')
+#plt.title('ROC Curve with Adversarial Learning: Performance on Last Model')
+#plt.legend(loc="lower right")
+##plt.show()
+#
+#
+##savefig('~/adversarial_learning/out_of_time_roc.png',bbox_inches='tight')
+#plt.savefig('out_of_time_roc_lastmodelstrategy_15pct.png',bbox_inches='tight')
+#
+##remove plot
+#plt.clf()
+#
+#
+##print all AUCs
+#for fold in all_fold_oot:
+#    model=model_list[9] #last model
+#    syntheticdata_t2=fold.drop('FRD_IND',axis=1)
+#    #syntheticdata_test=syntheticdata_test.drop('model_pred',axis=1)
+#    mod_test3 = model.predict_proba(syntheticdata_t2)[:,1]
+#    fpr, tpr, _ = roc_curve(fold['FRD_IND'], mod_test3)
+#    print("The Outside of Time Sample AUC score is:", roc_auc_score(fold['FRD_IND'],mod_test3 )) 
+#
+#folds_list3=[all_fold_oot[0],all_fold_oot[3],all_fold_oot[6],all_fold_oot[9]]    
+# #run coverage curve:   
+#for fold,color in zip(folds_list3,colors):
+#    model=model_list[9]
+#    syntheticdata_test3=fold.drop('FRD_IND',axis=1)
+#    #syntheticdata_test=syntheticdata_test.drop('model_pred',axis=1)
+#    model_predictions=model.predict_proba(syntheticdata_test3)[:,1]
+#    new_fold=fold
+#    new_fold['model_pred']=model_predictions
+#    # create sorted df
+#    sorted_df = coverage_curve(new_fold, 'FRD_IND', 'model_pred', new_fold['AUTHZN_AMT'])
+#    #remove model_pred
+#    new_fold=new_fold.drop('model_pred',axis=1)
+#    # produce chart
+#    plt.plot(sorted_df['Trxn_Cumulative'], sorted_df['Fraud_Cumulative'], color=color, label='ROC Round %d' % (fold_n[i_num]))
+#    plt.title('Coverage Curve with Adversarial Learning')
+#    plt.legend(loc="lower right")
+##save plot
+#plt.savefig('coverage_adv_learn_2.png',bbox_inches='tight')
+#
+##remove plot
+#plt.clf()   
+#    
 
     
 
@@ -720,15 +733,18 @@ for fold in all_fold_oot:
     print("The Outside of Time Sample AUC score is:", roc_auc_score(fold['FRD_IND'],mod_test3 ))  
 ####
 
+folds_list4=[all_fold_oot[0],all_fold_oot[3],all_fold_oot[6],all_fold_oot[9]]
 #run coverage curve:   
-for fold,color,i in zip(folds_list,colors,ilist):
+for fold,color,i in zip(folds_list4,colors,ilist):
     model=firstmod
-    syntheticdata_test=fold.drop('FRD_IND',axis=1)
-    model_predictions=model.predict_proba(syntheticdata_test)[:,1]
-    fold['model_pred']=model_predictions
+    syntheticdata_test4=fold.drop('FRD_IND',axis=1)
+    model_predictions=model.predict_proba(syntheticdata_test4)[:,1]
+    new_fold=fold
+    new_fold['model_pred']=model_predictions
     # create sorted df
-    sorted_df = coverage_curve(fold, 'FRD_IND', 'model_pred', fold['AUTHZN_AMT'])
-    
+    sorted_df = coverage_curve(new_fold, 'FRD_IND', 'model_pred', new_fold['AUTHZN_AMT'])
+    #drop model_pred
+    new_fold=new_fold.drop('model_pred',axis=1)
     # produce chart
     plt.plot(sorted_df['Trxn_Cumulative'], sorted_df['Fraud_Cumulative'], color=color, label='ROC Round '+str(i))
     plt.title('Coverage Curve with Adversarial Learning')
