@@ -250,6 +250,7 @@ folds_list=[all_fold_oot[0],all_fold_oot[3],all_fold_oot[6],all_fold_oot[9]]
 model_list2=[model_list[0],model_list[3],model_list[6],model_list[9]]
 for l, color, z in zip(folds_list, colors, model_list2):
     syntheticdata_test=l.drop('FRD_IND',axis=1)
+    #syntheticdata_test=syntheticdata_test.drop('model_pred',axis=1)
     #mod_test2 = z.predict(syntheticdata_test)
     mod_test3 = z.predict_proba(syntheticdata_test)[:,1]
     #cmfull=confusion_matrix(l['FRD_IND'],mod_test2)
@@ -327,21 +328,19 @@ plt.clf()
 i_num = 0
 fold_n=[1,4,7,10]
 
-
-
 colors = cycle(['cyan', 'indigo', 'seagreen','darkorange'])
 folds_list=[all_fold_oot[0],all_fold_oot[3],all_fold_oot[6],all_fold_oot[9]]
 firstmod = model_list[0]
 for l, color in zip(folds_list, colors):
     syntheticdata_test=l.drop('FRD_IND',axis=1)
-    #syntheticdata_test=syntheticdata_test.drop('model_pred',axis=1)
+    syntheticdata_test=syntheticdata_test.drop('model_pred',axis=1)
     #mod_test2 = z.predict(syntheticdata_test)
     mod_test3 = firstmod.predict_proba(syntheticdata_test)[:,1]
     #cmfull=confusion_matrix(l['FRD_IND'],mod_test2)
     fpr, tpr, _ = roc_curve(l['FRD_IND'], mod_test3)
     #fpr, tpr, thresholds = roc_curve(l['FRD_IND'], mod_test3, pos_label=2)
     #print("The FNR is:", cmfull[0][1])
-    print("The Outside of Time Sample AUC score is:", roc_auc_score(l['FRD_IND'],mod_test3 ))
+    print("The Outside of Time Sample AUC score is (model 2):", roc_auc_score(l['FRD_IND'],mod_test3 ))
     #aucscore = roc_auc_score(l['FRD_IND'],mod_test2 )
     #getting predicted probablilites for fraud
     #mod_test3 = z.predict_proba(syntheticdata_test)[:,1]
@@ -372,6 +371,7 @@ plt.clf()
 for fold in all_fold_oot:
     model=model_list[0] #first model
     syntheticdata_test=fold.drop('FRD_IND',axis=1)
+    #syntheticdata_test=syntheticdata_test.drop('model_pred',axis=1)
     mod_test3 = model.predict_proba(syntheticdata_test)[:,1]
     fpr, tpr, _ = roc_curve(fold['FRD_IND'], mod_test3)
     print("The Outside of Time Sample AUC score (model 2) is:", roc_auc_score(fold['FRD_IND'],mod_test3 )) 
@@ -387,6 +387,7 @@ folds_list=[all_fold_oot[0],all_fold_oot[3],all_fold_oot[6],all_fold_oot[9]]
 lastmod = model_list[9]
 for l, color in zip(folds_list, colors):
     syntheticdata_test=l.drop('FRD_IND',axis=1)
+    syntheticdata_test=syntheticdata_test.drop('model_pred',axis=1)
     #mod_test2 = z.predict(syntheticdata_test)
     mod_test3 = lastmod.predict_proba(syntheticdata_test)[:,1]
     #cmfull=confusion_matrix(l['FRD_IND'],mod_test2)
@@ -423,6 +424,7 @@ plt.clf()
 for fold in all_fold_oot:
     model=model_list[9] #last model
     syntheticdata_test=fold.drop('FRD_IND',axis=1)
+    syntheticdata_test=syntheticdata_test.drop('model_pred',axis=1)
     mod_test3 = model.predict_proba(syntheticdata_test)[:,1]
     fpr, tpr, _ = roc_curve(fold['FRD_IND'], mod_test3)
     print("The Outside of Time Sample AUC score is:", roc_auc_score(fold['FRD_IND'],mod_test3 )) 
@@ -431,6 +433,7 @@ for fold in all_fold_oot:
 for fold,color in zip(folds_list,colors):
     model=model_list[9]
     syntheticdata_test=fold.drop('FRD_IND',axis=1)
+    syntheticdata_test=syntheticdata_test.drop('model_pred',axis=1)
     model_predictions=model.predict_proba(syntheticdata_test)[:,1]
     fold['model_pred']=model_predictions
     # create sorted df
@@ -526,6 +529,7 @@ for i in range(1,11):
         df1=pd.concat([df1,add_fraud],axis=0)
 
  
+    
     #split into training, 'testing' (finding the adversarial best strategy data frame), out of time (validation set)
     #train, test, out_of_time = np.split(fold_loc.sample(frac=1), [int(.4*len(fold_loc)), int(.8*len(fold_loc))])
     #60% training, 20% test, 20% validation
@@ -676,6 +680,7 @@ firstmod=model_list[0]
 
 for l, color in zip(folds_list, colors):
     syntheticdata_test=l.drop('FRD_IND',axis=1)
+    #syntheticdata_test=syntheticdata_test.drop('model_pred',axis=1)
     #mod_test2 = z.predict(syntheticdata_test)
     mod_test3 = firstmod.predict_proba(syntheticdata_test)[:,1]
     #cmfull=confusion_matrix(l['FRD_IND'],mod_test2)
@@ -709,6 +714,7 @@ plt.savefig('out_of_time_roc_no_change_15pct.png',bbox_inches='tight')
 for fold in all_fold_oot:
     model=model_list[0]
     syntheticdata_test=fold.drop('FRD_IND',axis=1)
+    #syntheticdata_test=syntheticdata_test.drop('model_pred',axis=1)
     mod_test3 = model.predict_proba(syntheticdata_test)[:,1]
     fpr, tpr, _ = roc_curve(fold['FRD_IND'], mod_test3)
     print("The Outside of Time Sample AUC score is:", roc_auc_score(fold['FRD_IND'],mod_test3 ))  
