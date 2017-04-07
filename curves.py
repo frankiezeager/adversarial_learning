@@ -63,7 +63,7 @@ for i in range(1,11):
             
     adv_trans_amount.append(trans_sum)
     
-    
+print("the money lost by adversarial learning by round: ",adv_trans_amount)  
     
 #adv_learning_models=[]
 #for mod in range(3):
@@ -102,7 +102,7 @@ for l, color, z in zip(folds_list, colors, model_list2):
     fpr, tpr, _ = roc_curve(l['FRD_IND'], mod_test3)
     #fpr, tpr, thresholds = roc_curve(l['FRD_IND'], mod_test3, pos_label=2)
     #print("The FNR is:", cmfull[0][1])
-    print("The Outside of Time Sample AUC score is:", roc_auc_score(l['FRD_IND'],mod_test3 ))
+    print("The Plot AUC score is:", roc_auc_score(l['FRD_IND'],mod_test3 ))
     #aucscore = roc_auc_score(l['FRD_IND'],mod_test2 )
     #getting predicted probablilites for fraud
     #mod_test3 = z.predict_proba(syntheticdata_test)[:,1]
@@ -135,7 +135,7 @@ for fold, model in  zip(folds_list, model_list2):
     syntheticdata_test=syntheticdata_test.drop(syntheticdata_test.columns[0],axis=1)
     mod_test3 = model.predict_proba(syntheticdata_test)[:,1]
     fpr, tpr, _ = roc_curve(fold['FRD_IND'], mod_test3)
-    print("The Outside of Time Sample AUC score (model 1) is:", roc_auc_score(fold['FRD_IND'],mod_test3 ))
+    print("The All Rounds Adversarial Learning AUC score (model 1) is:", roc_auc_score(fold['FRD_IND'],mod_test3 ))
 
 
 
@@ -222,6 +222,9 @@ for i in range(1,11):
     trans_sum = fnr_index['AUTHZN_AMT'].sum()
             
     nolearn_trans_amount.append(trans_sum)
+
+print("the money lost without learning by round: ",nolearn_trans_amount)  
+
     
 diff_list = [a_i - b_i for a_i, b_i in zip(adv_trans_amount, nolearn_trans_amount)]
 
@@ -244,7 +247,7 @@ for l, color in zip(folds_list, colors):
     fpr, tpr, _ = roc_curve(l['FRD_IND'], mod_test3)
     #fpr, tpr, thresholds = roc_curve(l['FRD_IND'], mod_test3, pos_label=2)
     #print("The FNR is:", cmfull[0][1])
-    print("The Outside of Time Sample AUC score is:", roc_auc_score(l['FRD_IND'],mod_test3 ))
+    print("The Plot AUC score is:", roc_auc_score(l['FRD_IND'],mod_test3 ))
     #aucscore = roc_auc_score(l['FRD_IND'],mod_test2 )
     #getting predicted probablilites for fraud
     #mod_test3 = z.predict_proba(syntheticdata_test)[:,1]
@@ -278,7 +281,7 @@ for fold in no_learning_oot:
     #syntheticdata_test=syntheticdata_test.drop('model_pred',axis=1)
     mod_test3 = model.predict_proba(syntheticdata_test)[:,1]
     fpr, tpr, _ = roc_curve(fold['FRD_IND'], mod_test3)
-    print("The Outside of Time Sample AUC score is:", roc_auc_score(fold['FRD_IND'],mod_test3 ))  
+    print("All Rounds No Learning AUC score is:", roc_auc_score(fold['FRD_IND'],mod_test3 ))  
 
 ### Coverage Curve ###
 
