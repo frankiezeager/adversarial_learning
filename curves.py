@@ -31,6 +31,7 @@ from pylab import plot,show,hist,savefig
 import os
 import copy
 import pickle
+from sklearn.externals import joblib
 plt.switch_backend('agg')
 
 ############### Adversarial Learning #####################################################################################################################################
@@ -42,7 +43,11 @@ for i in range(1,11):
     adv_learning_oot.append(file)
 
 #load model list 
-adv_learning_models=pickle.load(open('adv_learning_models.p','rb'))
+adv_learning_models=joblib.load('adv_learning_models.pkl')
+#adv_learning_models=[]
+#for mod in range(3):
+#    x=joblib.load('adv_learning_model'+(str(mod))+'.pkl')
+#    adv_learning_models.append(x)
 
 i_num = 0
 fold_n=[1,4,7,10]
@@ -54,6 +59,8 @@ lw=2
 colors = cycle(['cyan', 'indigo', 'seagreen','darkorange'])
 folds_list=[adv_learning_oot[0].copy(deep=True),adv_learning_oot[3].copy(deep=True),adv_learning_oot[6].copy(deep=True),adv_learning_oot[9].copy(deep=True)]
 model_list2=[adv_learning_models[0],adv_learning_models[3],adv_learning_models[6],adv_learning_models[9]]
+#folds_list=adv_learning_oot
+#model_list2=adv_learning_models
 for l, color, z in zip(folds_list, colors, model_list2):
     l=l.copy(deep=True)
     #remove fraud indicator
@@ -169,7 +176,7 @@ for i in range(1,11):
     no_learning_oot.append(file)
 
 #load model list 
-no_learning_mod=pickle.load(open('no_learning_model.p','rb'))
+no_learning_mod=joblib.load('no_learning_model.pkl')
 
 i_num = 0
 fold_n=[1,4,7,10]

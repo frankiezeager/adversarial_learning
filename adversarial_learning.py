@@ -26,6 +26,7 @@ from pylab import plot,show,hist,savefig
 import os
 import copy
 import pickle
+from sklearn.externals import joblib
 plt.switch_backend('agg')
 
 colnames = ['AUTH_ID','ACCT_ID_TOKEN','FRD_IND','ACCT_ACTVN_DT','ACCT_AVL_CASH_BEFORE_AMT','ACCT_AVL_MONEY_BEFORE_AMT','ACCT_CL_AMT','ACCT_CURR_BAL','ACCT_MULTICARD_IND','ACCT_OPEN_DT','ACCT_PROD_CD','ACCT_TYPE_CD','ADR_VFCN_FRMT_CD','ADR_VFCN_RESPNS_CD','APPRD_AUTHZN_CNT','APPRD_CASH_AUTHZN_CNT','ARQC_RSLT_CD','AUTHZN_ACCT_STAT_CD','AUTHZN_AMT','AUTHZN_CATG_CD','AUTHZN_CHAR_CD','AUTHZN_OPSET_ID','AUTHZN_ORIG_SRC_ID','AUTHZN_OUTSTD_AMT','AUTHZN_OUTSTD_CASH_AMT','AUTHZN_RQST_PROC_CD','AUTHZN_RQST_PROC_DT','AUTHZN_RQST_PROC_TM','AUTHZN_RQST_TYPE_CD','AUTHZN_TRMNL_PIN_CAPBLT_NUM','AVG_DLY_AUTHZN_AMT','CARD_VFCN_2_RESPNS_CD','CARD_VFCN_2_VLDTN_DUR','CARD_VFCN_MSMT_REAS_CD','CARD_VFCN_PRESNC_CD','CARD_VFCN_RESPNS_CD','CARD_VFCN2_VLDTN_CD','CDHLDR_PRES_CD','CRCY_CNVRSN_RT','ELCTR_CMRC_IND_CD','HOME_PHN_NUM_CHNG_DUR','HOTEL_STAY_CAR_RENTL_DUR','LAST_ADR_CHNG_DUR','LAST_PLSTC_RQST_REAS_CD','MRCH_CATG_CD','MRCH_CNTRY_CD','NEW_USER_ADDED_DUR','PHN_CHNG_SNC_APPN_IND','PIN_BLK_CD','PIN_VLDTN_IND','PLSTC_ACTVN_DT','PLSTC_ACTVN_REQD_IND','PLSTC_FRST_USE_TS','PLSTC_ISU_DUR','PLSTC_PREV_CURR_CD','PLSTC_RQST_TS','POS_COND_CD','POS_ENTRY_MTHD_CD','RCURG_AUTHZN_IND','RVRSL_IND','SENDR_RSIDNL_CNTRY_CD','SRC_CRCY_CD','SRC_CRCY_DCML_PSN_NUM','TRMNL_ATTNDNC_CD','TRMNL_CAPBLT_CD','TRMNL_CLASFN_CD','TRMNL_ID','TRMNL_PIN_CAPBLT_CD','DISTANCE_FROM_HOME']
@@ -46,8 +47,9 @@ all_fold_oot=[]
 
 for i in range(1,11):
     #read in the data file
-    df1=pd.read_csv('/home/ec2-user/adversarial_learning/'+'training_part_0'+str(i)+'_of_10.txt',delimiter='|',header=None, names=colnames)
+    df1=pd.read_csv('training_part_0'+str(i)+'_of_10.txt',delimiter='|',header=None, names=colnames)
     #df1=pd.read_csv(str('/Users/frankiezeager/Documents/Graduate School/Capstone/'+'training_part_0'+str(i)+'_of_10.txt'),delimiter='|',header=None, names=colnames)
+    #df1=df1.sample(n=100000)
     #df1=pd.read_csv('/Users/frankiezeager/Documents/Graduate School/Capstone/training_part_01_of_10.txt',delimiter='|',header=None, names=colnames)
     #sort values by date
     df1 = df1.sort_values(['AUTHZN_RQST_PROC_DT'])
@@ -236,7 +238,7 @@ for i in range(1,11):
     syntheticdata = pd.concat((smox,smoy), axis=1)
     syntheticdata.columns=col_list
     #delete data frame to make more space in memory
-    del df1
+    #del df1
 
 
 #output files
@@ -246,9 +248,45 @@ for file in all_fold_oot:
     val=val+1
 
 #output models
-pickle.dump(model_list, open('adv_learning_models.p','wb'))
+#for mod in range(3):
+#    joblib.dump(model_list[mod], 'adv_learning_model'+(str(mod))+'.pkl')
+joblib.dump(model_list, 'adv_learning_models.pkl',compress=True)
+
+i_num = 0
+fold_n=[1,4,7,10]
 
 
+### ROC Curve (adversarial learning) ###
+adv_learning_oot=all_fold_oot
+adv_learning_models=model_list
+lw=2
+colors = cycle(['cyan', 'indigo', 'seagreen','darkorange'])
+folds_list=[adv_learning_oot[0].copy(deep=True),adv_learning_oot[3].copy(deep=True),adv_learning_oot[6].copy(deep=True),adv_learning_oot[9].copy(deep=True)]
+model_list2=[adv_learning_models[0],adv_learning_models[3],adv_learning_models[6],adv_learning_models[9]]
+
+#folds_list=adv_learning_oot
+#model_list2=adv_learning_models
+for l, color, z in zip(folds_list, colors, model_list2):
+    l=l.copy(deep=True)
+    #remove fraud indicator
+    syntheticdata_test=l.drop('FRD_IND',axis=1)
+    #remove index column
+    #syntheticdata_test=syntheticdata_test.drop(syntheticdata_test.columns[0],axis=1)
+    #syntheticdata_test=syntheticdata_test.drop('model_pred',axis=1)
+    #mod_test2 = z.predict(syntheticdata_test)
+    mod_test3 = z.predict_proba(syntheticdata_test)[:,1]
+    #cmfull=confusion_matrix(l['FRD_IND'],mod_test2)
+    fpr, tpr, _ = roc_curve(l['FRD_IND'], mod_test3)
+    #fpr, tpr, thresholds = roc_curve(l['FRD_IND'], mod_test3, pos_label=2)
+    #print("The FNR is:", cmfull[0][1])
+    print("The Outside of Time Sample AUC score is:", roc_auc_score(l['FRD_IND'],mod_test3 ))
+    #aucscore = roc_auc_score(l['FRD_IND'],mod_test2 )
+    #getting predicted probablilites for fraud
+    #mod_test3 = z.predict_proba(syntheticdata_test)[:,1]
+    #fpr1, tpr1, _ = roc_curve(l['FRD_IND'], mod_test3)
+    aucscore = auc(fpr, tpr )
+    plt.plot(fpr, tpr, lw=lw, color=color, label='ROC Round %d (area = %0.2f)' % (fold_n[i_num], aucscore))
+    i_num += 1
     
 
 ######################################## MODEL STAYS THE SAME, ADVERSARY CHANGES (no adv learning) ###############################################################################################################
@@ -466,6 +504,6 @@ for file in all_fold_oot:
     val=val+1
 
 #output models
-pickle.dump(model_list[0], open('no_learning_model.p','wb'))
+joblib.dump(model_list[0], 'no_learning_model.pkl',compress=True)
 
 
