@@ -250,44 +250,7 @@ for file in all_fold_oot:
 #output models
 #for mod in range(3):
 #    joblib.dump(model_list[mod], 'adv_learning_model'+(str(mod))+'.pkl')
-joblib.dump(model_list, 'adv_learning_models.pkl',compress=True)
-
-i_num = 0
-fold_n=[1,4,7,10]
-
-
-### ROC Curve (adversarial learning) ###
-adv_learning_oot=all_fold_oot
-adv_learning_models=model_list
-lw=2
-colors = cycle(['cyan', 'indigo', 'seagreen','darkorange'])
-folds_list=[adv_learning_oot[0].copy(deep=True),adv_learning_oot[3].copy(deep=True),adv_learning_oot[6].copy(deep=True),adv_learning_oot[9].copy(deep=True)]
-model_list2=[adv_learning_models[0],adv_learning_models[3],adv_learning_models[6],adv_learning_models[9]]
-
-#folds_list=adv_learning_oot
-#model_list2=adv_learning_models
-for l, color, z in zip(folds_list, colors, model_list2):
-    l=l.copy(deep=True)
-    #remove fraud indicator
-    syntheticdata_test=l.drop('FRD_IND',axis=1)
-    #remove index column
-    #syntheticdata_test=syntheticdata_test.drop(syntheticdata_test.columns[0],axis=1)
-    #syntheticdata_test=syntheticdata_test.drop('model_pred',axis=1)
-    #mod_test2 = z.predict(syntheticdata_test)
-    mod_test3 = z.predict_proba(syntheticdata_test)[:,1]
-    #cmfull=confusion_matrix(l['FRD_IND'],mod_test2)
-    fpr, tpr, _ = roc_curve(l['FRD_IND'], mod_test3)
-    #fpr, tpr, thresholds = roc_curve(l['FRD_IND'], mod_test3, pos_label=2)
-    #print("The FNR is:", cmfull[0][1])
-    print("The Outside of Time Sample AUC score is:", roc_auc_score(l['FRD_IND'],mod_test3 ))
-    #aucscore = roc_auc_score(l['FRD_IND'],mod_test2 )
-    #getting predicted probablilites for fraud
-    #mod_test3 = z.predict_proba(syntheticdata_test)[:,1]
-    #fpr1, tpr1, _ = roc_curve(l['FRD_IND'], mod_test3)
-    aucscore = auc(fpr, tpr )
-    plt.plot(fpr, tpr, lw=lw, color=color, label='ROC Round %d (area = %0.2f)' % (fold_n[i_num], aucscore))
-    i_num += 1
-    
+joblib.dump(model_list, 'adv_learning_models.pkl',compress=True)   
 
 ######################################## MODEL STAYS THE SAME, ADVERSARY CHANGES (no adv learning) ###############################################################################################################
 #make sure the seed is set
