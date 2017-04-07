@@ -404,7 +404,7 @@ for i in range(1,11):
 #########Gaussian Mixture Model to Determine Strategies#############
 
     #subset df to include only pertinent (adversarial-controlled) continuous vars
-    strat_ind = [0, 2, 3, 5, 6] 
+    strat_ind = [0, 1, 2, 3, 4, 6, 9] 
     strategy_df= pd.DataFrame(test.iloc[:,strat_ind]) 
 
 
