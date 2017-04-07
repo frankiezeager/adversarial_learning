@@ -106,16 +106,23 @@ for i in range(1,11):
     #60% training, 20% test, 20% validation
     
     #alternative method to find 60-20-20 train, test, validate but according to time order
-    def train_test_validate_split(df, train_percent=.6, validate_percent=.2, seed=1345):
-        m = len(df)
-        train_end = int(train_percent * m)
-        validate_end = int(validate_percent * m) + train_end
-        train = df.iloc[:train_end]
-        test = df.iloc[train_end:validate_end]
-        out_of_time = df.iloc[validate_end:]
-        return train, test, out_of_time
+#    def train_test_validate_split(df, train_percent=.6, validate_percent=.2):
+#        m = len(df)
+#        train_end = int(train_percent * m)
+#        validate_end = int(validate_percent * m) + train_end
+#        train = df.iloc[:train_end]
+#        test = df.iloc[train_end:validate_end]
+#        out_of_time = df.iloc[validate_end:]
+#        return train, test, out_of_time
+#    
+#    train, test, out_of_time = train_test_validate_split(df1)
+
+    train,intermediate_set=train_test_split(df1,train_size=.6,test_size=.4,random_state=1575)		
+    test, out_of_time=train_test_split(intermediate_set, train_size=.5,test_size=.5,random_state=1575)	
     
-    train, test, out_of_time = train_test_validate_split(df1)
+    #delete intermediate set
+    del intermediate_set
+    
     
      #filling any NAs 
     train=train.fillna(method='ffill')
@@ -326,17 +333,21 @@ for i in range(1,11):
     #60% training, 20% test, 20% validation
 
     #alternative method to find 60-20-20 train, test, validate but according to time order
-    def train_test_validate_split(df, train_percent=.6, validate_percent=.2, seed=1345):
-        m = len(df)
-        train_end = int(train_percent * m)
-        validate_end = int(validate_percent * m) + train_end
-        train = df.iloc[:train_end]
-        test = df.iloc[train_end:validate_end]
-        out_of_time = df.iloc[validate_end:]
-        return train, test, out_of_time
+#    def train_test_validate_split(df, train_percent=.6, validate_percent=.2, seed=1345):
+#        m = len(df)
+#        train_end = int(train_percent * m)
+#        validate_end = int(validate_percent * m) + train_end
+#        train = df.iloc[:train_end]
+#        test = df.iloc[train_end:validate_end]
+#        out_of_time = df.iloc[validate_end:]
+#        return train, test, out_of_time
+#    
+#    train, test, out_of_time = train_test_validate_split(df1)
     
-    train, test, out_of_time = train_test_validate_split(df1)
-
+    train,intermediate_set=train_test_split(df1,train_size=.6,test_size=.4,random_state=1575)		
+    test, out_of_time=train_test_split(intermediate_set, train_size=.5,test_size=.5,random_state=1575)	
+    #delete intermediate set
+    del intermediate_set
 
     train=train.fillna(method='ffill')
     test=test.fillna(method='ffill')
