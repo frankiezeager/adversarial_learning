@@ -127,6 +127,7 @@ ilist=[2,4,7,10]
 folds_list2=[adv_learning_oot[1].copy(deep=True),adv_learning_oot[3].copy(deep=True),adv_learning_oot[6].copy(deep=True),adv_learning_oot[9].copy(deep=True)]  
 model_list2=[adv_learning_models[1], adv_learning_models[3],adv_learning_models[6],adv_learning_models[9]]
 
+val=1
 #run coverage curve:   
 for fold,model,color,i in zip(folds_list2,model_list2,colors,ilist):
     fold=fold.copy(deep=True)
@@ -138,6 +139,7 @@ for fold,model,color,i in zip(folds_list2,model_list2,colors,ilist):
     fold['model_pred']=model_predictions
     # create sorted df
     sorted_df = coverage_curve(fold, 'FRD_IND', 'model_pred', fold['AUTHZN_AMT'])
+    sorted_df.to_csv('adv_learning_coverage_'+str(val)+'.csv')
     #drop model_pred
     fold=fold.drop('model_pred',axis=1)
     # produce chart
@@ -146,6 +148,7 @@ for fold,model,color,i in zip(folds_list2,model_list2,colors,ilist):
     plt.ylabel('Percent Fraud Caught')
     plt.title('Coverage Curve with Adversarial Learning')
     plt.legend(loc="lower right")
+    val=val+1
     
 #save plot
 plt.savefig('adv_learn_coverage(1).png',bbox_inches='tight')
@@ -230,6 +233,7 @@ for fold in no_learning_oot:
 ilist=[2,4,7,10]
 folds_list4=[no_learning_oot[1].copy(deep=True),no_learning_oot[3].copy(deep=True),no_learning_oot[6].copy(deep=True),no_learning_oot[9].copy(deep=True)]
 
+val=1
 #run coverage curve:   
 for fold,color,i in zip(folds_list4,colors,ilist):
     fold=fold.copy(deep=True)
@@ -241,6 +245,7 @@ for fold,color,i in zip(folds_list4,colors,ilist):
     new_fold['model_pred']=model_predictions
     # create sorted df
     sorted_df = coverage_curve(new_fold, 'FRD_IND', 'model_pred', new_fold['AUTHZN_AMT'])
+    sorted_df.to_csv('no_learning_coverage_'+str(val)+'.csv')
     #drop model_pred
     new_fold=new_fold.drop('model_pred',axis=1)
     # produce chart
@@ -249,6 +254,7 @@ for fold,color,i in zip(folds_list4,colors,ilist):
     plt.ylabel('Percent Fraud Caught')
     plt.title('Coverage Curve without Adversarial Learning')
     plt.legend(loc="lower right")
+    val=val+1
 #save plot
 plt.savefig('no_adv_coverage.png',bbox_inches='tight')
 
