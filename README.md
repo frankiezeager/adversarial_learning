@@ -1,12 +1,12 @@
 # adversarial_learning
 Using Adversarial Learning for Credit Card Fraud Detection
+\n
+# Instructions: 
 
-Instructions:
-
-Dependencies:
-python 3.5
-conda install pandas
-conda install -c glemaitre imbalanced-learn
+Dependencies: \n
+python 3.5 \n
+conda install pandas \n
+conda install -c glemaitre imbalanced-learn \n
 conda install matplotlib
 conda install pyqt=4
 conda install pytables
