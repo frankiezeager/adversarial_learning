@@ -36,18 +36,46 @@ plt.switch_backend('agg')
 
 ############### Adversarial Learning #####################################################################################################################################
 #read in the validation sets
-adv_learning_oot=[]
-
-for i in range(1,11):
-    file=pd.read_csv('adv_learning_test_'+str(i)+'.csv')
-    adv_learning_oot.append(file)
 
 #load model list 
 adv_learning_models=joblib.load('adv_learning_models.pkl')
+
+adv_learning_oot=[]
+
+adv_trans_amount = []
+for i in range(1,11):
+    file=pd.read_csv('adv_learning_test_'+str(i)+'.csv')
+    adv_learning_oot.append(file)
+    
+    fnr_file = file.copy(deep=True)
+    #remove fraud indicator
+    fnr_predict=fnr_file.drop('FRD_IND',axis=1)
+    #remove index column
+    fnr_predict=fnr_predict.drop(fnr_predict.columns[0],axis=1)
+    
+    model = adv_learning_models[(i-1)]
+    fnr_mod = model.predict(fnr_predict)
+    fnr_file['pred'] = fnr_mod
+    
+    trans_sum = 0
+    fnr_index = fnr_file.where((fnr_file['pred'] == 0) & (fnr_file['FRD_IND'] == 1))
+    trans_sum = fnr_index['AUTHZN_AMT'].sum()
+            
+    adv_trans_amount.append(trans_sum)
+    
+    
+    
 #adv_learning_models=[]
 #for mod in range(3):
 #    x=joblib.load('adv_learning_model'+(str(mod))+'.pkl')
 #    adv_learning_models.append(x)
+
+
+#Finding False Negatives in Validation Sets
+
+
+
+
 
 i_num = 0
 fold_n=[1,4,7,10]
@@ -129,10 +157,10 @@ def coverage_curve(df, target_variable_col, predicted_prob_fraud_col, trxn_amoun
   
     return df
     
-ilist=[2,4,7,10]
+ilist=[1,4,7,10]
 
-folds_list2=[adv_learning_oot[1].copy(deep=True),adv_learning_oot[3].copy(deep=True),adv_learning_oot[6].copy(deep=True),adv_learning_oot[9].copy(deep=True)]  
-model_list2=[adv_learning_models[1], adv_learning_models[3],adv_learning_models[6],adv_learning_models[9]]
+folds_list2=[adv_learning_oot[0].copy(deep=True),adv_learning_oot[3].copy(deep=True),adv_learning_oot[6].copy(deep=True),adv_learning_oot[9].copy(deep=True)]  
+model_list2=[adv_learning_models[0], adv_learning_models[3],adv_learning_models[6],adv_learning_models[9]]
 
 val=1
 #run coverage curve:   
@@ -141,7 +169,7 @@ for fold,model,color,i in zip(folds_list2,model_list2,colors,ilist):
     #remove ground truth column
     syntheticdata_test2=fold.drop('FRD_IND',axis=1)
     #remove index column
-    syntheticdata_test2=syntheticdata_test2.drop(syntheticdata_test.columns[0],axis=1)
+    syntheticdata_test2=syntheticdata_test2.drop(syntheticdata_test2.columns[0],axis=1)
     model_predictions=model.predict_proba(syntheticdata_test2)[:,1]
     fold['model_pred']=model_predictions
     # create sorted df
@@ -150,7 +178,7 @@ for fold,model,color,i in zip(folds_list2,model_list2,colors,ilist):
     #drop model_pred
     fold=fold.drop('model_pred',axis=1)
     # produce chart
-    plt.plot(sorted_df['Trxn_Cumulative'], sorted_df['Fraud_Cumulative'], color=color, label='ROC Round '+str(i))
+    plt.plot(sorted_df['Trxn_Cumulative'], sorted_df['Fraud_Cumulative'], color=color, label='Round '+str(i))
     plt.xlabel('Cumulative Transactions Examined')
     plt.ylabel('Percent Fraud Caught')
     plt.title('Coverage Curve with Adversarial Learning')
@@ -168,18 +196,35 @@ plt.clf()
 
 
 ##################### Adversary learns, classifier remains the same (no adv learning)############################################
-#load validation sets for plots
+#load model list 
+no_learning_mod=joblib.load('no_learning_model.pkl')
+
 no_learning_oot=[]
+
+nolearn_trans_amount = []
 
 for i in range(1,11):
     file=pd.read_csv('no_learning_test_'+str(i)+'.csv')
     no_learning_oot.append(file)
+    
+    fnr_file = file.copy(deep=True)
+    #remove fraud indicator
+    fnr_predict=fnr_file.drop('FRD_IND',axis=1)
+    #remove index column
+    fnr_predict=fnr_predict.drop(fnr_predict.columns[0],axis=1)
+    
+    model = no_learning_mod
+    fnr_mod = model.predict(fnr_predict)
+    fnr_file['pred'] = fnr_mod
+    
+    trans_sum = 0
+    fnr_index = fnr_file.where((fnr_file['pred'] == 0) & (fnr_file['FRD_IND'] == 1))
+    trans_sum = fnr_index['AUTHZN_AMT'].sum()
+            
+    nolearn_trans_amount.append(trans_sum)
+    
+diff_list = [a_i - b_i for a_i, b_i in zip(adv_trans_amount, nolearn_trans_amount)]
 
-#load model list 
-no_learning_mod=joblib.load('no_learning_model.pkl')
-
-i_num = 0
-fold_n=[1,4,7,10]
 i_num = 0
 fold_n=[1,4,7,10]
 
@@ -237,8 +282,8 @@ for fold in no_learning_oot:
 
 ### Coverage Curve ###
 
-ilist=[2,4,7,10]
-folds_list4=[no_learning_oot[1].copy(deep=True),no_learning_oot[3].copy(deep=True),no_learning_oot[6].copy(deep=True),no_learning_oot[9].copy(deep=True)]
+ilist=[1,4,7,10]
+folds_list4=[no_learning_oot[0].copy(deep=True),no_learning_oot[3].copy(deep=True),no_learning_oot[6].copy(deep=True),no_learning_oot[9].copy(deep=True)]
 
 val=1
 #run coverage curve:   
@@ -246,7 +291,7 @@ for fold,color,i in zip(folds_list4,colors,ilist):
     fold=fold.copy(deep=True)
     model=firstmod
     syntheticdata_test4=fold.drop('FRD_IND',axis=1)
-    syntheticdata_test4=syntheticdata_test4.drop(syntheticdata_test.columns[0],axis=1)
+    syntheticdata_test4=syntheticdata_test4.drop(syntheticdata_test4.columns[0],axis=1)
     model_predictions=model.predict_proba(syntheticdata_test4)[:,1]
     new_fold=fold
     new_fold['model_pred']=model_predictions
@@ -256,7 +301,7 @@ for fold,color,i in zip(folds_list4,colors,ilist):
     #drop model_pred
     new_fold=new_fold.drop('model_pred',axis=1)
     # produce chart
-    plt.plot(sorted_df['Trxn_Cumulative'], sorted_df['Fraud_Cumulative'], color=color, label='ROC Round '+str(i))
+    plt.plot(sorted_df['Trxn_Cumulative'], sorted_df['Fraud_Cumulative'], color=color, label='Round '+str(i))
     plt.xlabel('Cumulative Transactions Examined')
     plt.ylabel('Percent Fraud Caught')
     plt.title('Coverage Curve without Adversarial Learning')
