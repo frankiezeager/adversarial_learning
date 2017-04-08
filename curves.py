@@ -122,12 +122,12 @@ plt.legend(loc="lower right")
 
 #export plot
 plt.savefig('adv_learning_roc.png',bbox_inches='tight')
-
+plt.savefig('adv_learning_roc.svg',bbox_inches='tight')
 #remove plot
 plt.clf()
     
 #print all AUCs
-for fold, model in  zip(folds_list, model_list2):
+for fold, model in  zip(adv_learning_oot, adv_learning_models):
     fold=fold.copy(deep=True)
     #remove ground truth column
     syntheticdata_test=fold.drop('FRD_IND',axis=1)
@@ -187,6 +187,7 @@ for fold,model,color,i in zip(folds_list2,model_list2,colors,ilist):
     
 #save plot
 plt.savefig('adv_learn_coverage(1).png',bbox_inches='tight')
+plt.savefig('adv_learn_coverage(1).svg',bbox_inches='tight')
 
 #remove plot
 plt.clf()   
@@ -268,6 +269,7 @@ plt.legend(loc="lower right")
 
 #savefig('~/adversarial_learning/out_of_time_roc.png',bbox_inches='tight')
 plt.savefig('no_learning_roc.png',bbox_inches='tight')
+plt.savefig('no_learning_roc.svg',bbox_inches='tight')
 
 #remove plot
 plt.clf()
@@ -312,6 +314,7 @@ for fold,color,i in zip(folds_list4,colors,ilist):
     val=val+1
 #save plot
 plt.savefig('no_adv_coverage.png',bbox_inches='tight')
+plt.savefig('no_adv_coverage.svg',bbox_inches='tight')
 
 #remove plot
 plt.clf()
