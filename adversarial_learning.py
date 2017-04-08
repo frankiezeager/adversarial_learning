@@ -93,12 +93,11 @@ for i in range(1,11):
         #find percent fraud in current df
         df_pct_fraud=sum(df1.FRD_IND==1)/len(df1)
         #find difference between this and the 15% fraud desired
-        pct_fraud_needed=.15-df_pct_fraud
-        pct_fraud_needed=.15
+        pct_fraud_needed=abs(.15-df_pct_fraud)
+        #pct_fraud_needed=.15
         #find number of fraud transactions needed
         num_fraud_trans=math.floor(pct_fraud_needed*len(df1))
-        #num_fraud_trans=pct_fraud_needed*len(df1)
-        #num_fraud_trans=num_fraud_trans.astype(int)
+        num_fraud_trans=num_fraud_trans.astype(int)
         #finding the fraudulent transactions in synthetic data
         fraud_trans = syntheticdata[syntheticdata.iloc[:,-1] == 1]
         #sampling the fraud transactions to include amount needed
@@ -320,11 +319,11 @@ for i in range(1,11):
         #find percent fraud in current df
         df_pct_fraud=sum(df1.FRD_IND==1)/len(df1)
         #find difference between this and the 15% fraud desired
-        pct_fraud_needed=.15-df_pct_fraud
-        pct_fraud_needed=.15
+        pct_fraud_needed=abs(.15-df_pct_fraud)
+        #pct_fraud_needed=.15
         #find number of fraud transactions needed
         num_fraud_trans=math.floor(pct_fraud_needed*len(df1))
-        #num_fraud_trans=num_fraud_trans.astype(int)
+        num_fraud_trans=num_fraud_trans.astype(int)
         #finding the fraudulent transactions in synthetic data
         fraud_trans = syntheticdata[syntheticdata.iloc[:,-1] == 1]
         #sampling the fraud transactions to include amount needed
