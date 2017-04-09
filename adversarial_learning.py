@@ -92,8 +92,8 @@ for i in range(1,11):
     if i!=1:
         #find percent fraud in current df
         df_pct_fraud=sum(df1.FRD_IND==1)/len(df1)
-        #find difference between this and the 15% fraud desired
-        pct_fraud_needed=abs(.15-df_pct_fraud)
+        #find difference between this and the 8% fraud desired
+        pct_fraud_needed=abs(.08-df_pct_fraud)
         #pct_fraud_needed=.15
         #find number of fraud transactions needed
         num_fraud_trans=math.floor(pct_fraud_needed*len(df1))
@@ -318,8 +318,8 @@ for i in range(1,11):
     if i!=1:
         #find percent fraud in current df
         df_pct_fraud=sum(df1.FRD_IND==1)/len(df1)
-        #find difference between this and the 15% fraud desired
-        pct_fraud_needed=abs(.15-df_pct_fraud)
+        #find difference between this and the 8% fraud desired
+        pct_fraud_needed=abs(.08-df_pct_fraud)
         #pct_fraud_needed=.15
         #find number of fraud transactions needed
         num_fraud_trans=math.floor(pct_fraud_needed*len(df1))
