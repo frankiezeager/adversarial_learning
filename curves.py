@@ -236,7 +236,6 @@ firstmod=no_learning_mod
 for l, color in zip(folds_list, colors):
     l=l.copy(deep=True)
     syntheticdata_test=l.drop('FRD_IND',axis=1)
-    syntheticdata_test=syntheticdata_test.drop(syntheticdata_test.columns[0],axis=1)
     #syntheticdata_test=syntheticdata_test.drop('model_pred',axis=1)
     #mod_test2 = z.predict(syntheticdata_test)
     mod_test3 = firstmod.predict_proba(syntheticdata_test)[:,1]
@@ -292,7 +291,6 @@ for fold,color,i in zip(folds_list4,colors,ilist):
     fold=fold.copy(deep=True)
     model=firstmod
     syntheticdata_test4=fold.drop('FRD_IND',axis=1)
-    syntheticdata_test4=syntheticdata_test4.drop(syntheticdata_test4.columns[0],axis=1)
     model_predictions=model.predict_proba(syntheticdata_test4)[:,1]
     new_fold=fold
     new_fold['model_pred']=model_predictions
