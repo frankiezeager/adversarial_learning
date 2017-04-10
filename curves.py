@@ -44,14 +44,15 @@ adv_learning_oot=[]
 adv_trans_amount = []
 for i in range(1,11):
     file=pd.read_csv('adv_learning_test_'+str(i)+'.csv')
+    #remove index column
+    file=file.drop(file.columns[0],axis=1)
+
     adv_learning_oot.append(file)
     
     fnr_file = file.copy(deep=True)
     #remove fraud indicator
     fnr_predict=fnr_file.drop('FRD_IND',axis=1)
-    #remove index column
-    fnr_predict=fnr_predict.drop(fnr_predict.columns[0],axis=1)
-    
+
     model = adv_learning_models[(i-1)]
     fnr_mod = model.predict(fnr_predict)
     fnr_file['pred'] = fnr_mod
@@ -92,8 +93,6 @@ for l, color, z in zip(folds_list, colors, model_list2):
     l=l.copy(deep=True)
     #remove fraud indicator
     syntheticdata_test=l.drop('FRD_IND',axis=1)
-    #remove index column
-    syntheticdata_test=syntheticdata_test.drop(syntheticdata_test.columns[0],axis=1)
     #syntheticdata_test=syntheticdata_test.drop('model_pred',axis=1)
     #mod_test2 = z.predict(syntheticdata_test)
     mod_test3 = z.predict_proba(syntheticdata_test)[:,1]
@@ -130,8 +129,6 @@ for fold, model in  zip(adv_learning_oot, adv_learning_models):
     fold=fold.copy(deep=True)
     #remove ground truth column
     syntheticdata_test=fold.drop('FRD_IND',axis=1)
-    #remove index column
-    syntheticdata_test=syntheticdata_test.drop(syntheticdata_test.columns[0],axis=1)
     mod_test3 = model.predict_proba(syntheticdata_test)[:,1]
     fpr, tpr, _ = roc_curve(fold['FRD_IND'], mod_test3)
     print("The All Rounds Adversarial Learning AUC score (model 1) is:", roc_auc_score(fold['FRD_IND'],mod_test3 ))
@@ -167,8 +164,6 @@ for fold,model,color,i in zip(folds_list2,model_list2,colors,ilist):
     fold=fold.copy(deep=True)
     #remove ground truth column
     syntheticdata_test2=fold.drop('FRD_IND',axis=1)
-    #remove index column
-    syntheticdata_test2=syntheticdata_test2.drop(syntheticdata_test2.columns[0],axis=1)
     model_predictions=model.predict_proba(syntheticdata_test2)[:,1]
     fold['model_pred']=model_predictions
     # create sorted df
@@ -205,13 +200,14 @@ nolearn_trans_amount = []
 
 for i in range(1,11):
     file=pd.read_csv('no_learning_test_'+str(i)+'.csv')
+    #remove index column
+    file=file.drop(file.columns[0],axis=1)
+
     no_learning_oot.append(file)
     
     fnr_file = file.copy(deep=True)
     #remove fraud indicator
     fnr_predict=fnr_file.drop('FRD_IND',axis=1)
-    #remove index column
-    fnr_predict=fnr_predict.drop(fnr_predict.columns[0],axis=1)
     
     model = no_learning_mod
     fnr_mod = model.predict(fnr_predict)
