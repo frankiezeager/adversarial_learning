@@ -274,7 +274,6 @@ for fold in no_learning_oot:
     fold=fold.copy(deep=True)
     model=firstmod
     syntheticdata_test=fold.drop('FRD_IND',axis=1)
-    syntheticdata_test=syntheticdata_test.drop(syntheticdata_test.columns[0],axis=1)
     #syntheticdata_test=syntheticdata_test.drop('model_pred',axis=1)
     mod_test3 = model.predict_proba(syntheticdata_test)[:,1]
     fpr, tpr, _ = roc_curve(fold['FRD_IND'], mod_test3)
