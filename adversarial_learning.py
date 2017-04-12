@@ -93,8 +93,8 @@ for i in range(1,11):
     if i!=1:
         #find percent fraud in current df
         df_pct_fraud=sum(df1.FRD_IND==1)/len(df1)
-        #find difference between this and the 8% fraud desired
-        pct_fraud_needed=.08-df_pct_fraud
+        #find difference between this and the 4% fraud desired
+        pct_fraud_needed=.04-df_pct_fraud
         #pct_fraud_needed=.15
         #find number of fraud transactions needed
         num_fraud_trans=math.floor(pct_fraud_needed*len(df1))
@@ -196,7 +196,7 @@ for i in range(1,11):
     lowest_bic = np.infty
     bic = []
     # Fit a Gaussian mixture with EM
-    gmm = mixture.GaussianMixture(n_components=3,covariance_type='full',random_state=1575)
+    gmm = mixture.GaussianMixture(n_components=6,covariance_type='full',random_state=1575)
     gmm.fit(strategy_df)
 
     #assign each transaction a strategy
@@ -321,8 +321,8 @@ for i in range(1,11):
     if i!=1:
         #find percent fraud in current df
         df_pct_fraud=sum(df1.FRD_IND==1)/len(df1)
-        #find difference between this and the 8% fraud desired
-        pct_fraud_needed=.08-df_pct_fraud
+        #find difference between this and the 4% fraud desired
+        pct_fraud_needed=.04-df_pct_fraud
         #pct_fraud_needed=.15
         #find number of fraud transactions needed
         num_fraud_trans=math.floor(pct_fraud_needed*len(df1))
@@ -417,7 +417,7 @@ for i in range(1,11):
     lowest_bic = np.infty
     bic = []
           # Fit a Gaussian mixture with EM
-    gmm = mixture.GaussianMixture(n_components=3,covariance_type='full',random_state=1575)
+    gmm = mixture.GaussianMixture(n_components=6,covariance_type='full',random_state=1575)
     gmm.fit(strategy_df)
 
     #assign each transaction a strategy
