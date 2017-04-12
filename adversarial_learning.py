@@ -69,6 +69,7 @@ for i in range(1,11):
     t_ind = [2, 7, 14, 18, 23, 30, 44, 53, 57, 58, 68]
     
     #cols = pd.DataFrame(j.iloc[:,t_ind])
+    #subsetting relevant variables
     df1 = pd.DataFrame(df1.iloc[:,t_ind])
     
     #take out any NaN's from the data set
@@ -93,7 +94,7 @@ for i in range(1,11):
         #find percent fraud in current df
         df_pct_fraud=sum(df1.FRD_IND==1)/len(df1)
         #find difference between this and the 8% fraud desired
-        pct_fraud_needed=abs(.08-df_pct_fraud)
+        pct_fraud_needed=.08-df_pct_fraud
         #pct_fraud_needed=.15
         #find number of fraud transactions needed
         num_fraud_trans=math.floor(pct_fraud_needed*len(df1))
@@ -101,7 +102,7 @@ for i in range(1,11):
         #finding the fraudulent transactions in synthetic data
         fraud_trans = syntheticdata[syntheticdata.iloc[:,-1] == 1]
         #sampling the fraud transactions to include amount needed
-        add_fraud = fraud_trans.sample(n=num_fraud_trans, replace=True)
+        add_fraud = fraud_trans.sample(n=num_fraud_trans, replace=True,random_state=1575)
         #adding fraud transactions back to df1
         df1=pd.concat([df1,add_fraud],axis=0)
 
@@ -194,8 +195,8 @@ for i in range(1,11):
     #find best number of strategies:
     lowest_bic = np.infty
     bic = []
-          # Fit a Gaussian mixture with EM
-    gmm = mixture.GaussianMixture(n_components=3,covariance_type='full')
+    # Fit a Gaussian mixture with EM
+    gmm = mixture.GaussianMixture(n_components=3,covariance_type='full',random_state=1575)
     gmm.fit(strategy_df)
 
     #assign each transaction a strategy
@@ -224,15 +225,16 @@ for i in range(1,11):
         cm = confusion_matrix(col_response, pred)
         FNR = cm[0][1]
         fn_rate.append(FNR)
-
+    #find strategy with best false negative rate
     best_strat = fn_rate.index(max(fn_rate))
+    #append this df to the best strategy list of data frames
     best_strat_list.append(best_strat)
     best_fold = all_batches[best_strat]
 
     #Implement SMOTE (add 'good' fraud to the dataset)
     test_cols = best_fold.drop(labels='Strategy Number',axis=1)
     test_cols = test_cols.drop(labels='FRD_IND',axis=1)
-    smote = SMOTE(ratio=0.5, kind='regular',random_state=1445)
+    smote = SMOTE(ratio='auto', kind='regular',random_state=1445)
     smox, smoy = smote.fit_sample(test_cols, best_fold.FRD_IND)
     smox = pd.DataFrame(smox)
     smoy = pd.DataFrame(smoy)
@@ -319,7 +321,7 @@ for i in range(1,11):
         #find percent fraud in current df
         df_pct_fraud=sum(df1.FRD_IND==1)/len(df1)
         #find difference between this and the 8% fraud desired
-        pct_fraud_needed=abs(.08-df_pct_fraud)
+        pct_fraud_needed=.08-df_pct_fraud
         #pct_fraud_needed=.15
         #find number of fraud transactions needed
         num_fraud_trans=math.floor(pct_fraud_needed*len(df1))
@@ -327,7 +329,7 @@ for i in range(1,11):
         #finding the fraudulent transactions in synthetic data
         fraud_trans = syntheticdata[syntheticdata.iloc[:,-1] == 1]
         #sampling the fraud transactions to include amount needed
-        add_fraud = fraud_trans.sample(n=num_fraud_trans, replace=True)
+        add_fraud = fraud_trans.sample(n=num_fraud_trans, replace=True,random_state=1575)
         #adding fraud transactions back to df1
         df1=pd.concat([df1,add_fraud],axis=0)
 
@@ -415,7 +417,7 @@ for i in range(1,11):
     lowest_bic = np.infty
     bic = []
           # Fit a Gaussian mixture with EM
-    gmm = mixture.GaussianMixture(n_components=3,covariance_type='full')
+    gmm = mixture.GaussianMixture(n_components=3,covariance_type='full',random_state=1575)
     gmm.fit(strategy_df)
 
     #assign each transaction a strategy
@@ -452,7 +454,7 @@ for i in range(1,11):
     #Implement SMOTE (add 'good' fraud into the dataset)
     test_cols = best_fold.drop(labels='Strategy Number',axis=1)
     test_cols = test_cols.drop(labels='FRD_IND',axis=1)
-    smote = SMOTE(ratio=0.5, kind='regular',random_state=1445)
+    smote = SMOTE(ratio='auto', kind='regular',random_state=1445)
     smox, smoy = smote.fit_sample(test_cols, best_fold.FRD_IND)
     smox = pd.DataFrame(smox)
     smoy = pd.DataFrame(smoy)
