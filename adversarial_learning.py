@@ -229,6 +229,7 @@ for i in range(1,11):
     best_strat = fn_rate.index(max(fn_rate))
     #append this df to the best strategy list of data frames
     best_strat_list.append(best_strat)
+    print("The Best Strategy is: ", best_strat)
     best_fold = all_batches[best_strat]
 
     #Implement SMOTE (add 'good' fraud to the dataset)
@@ -332,7 +333,6 @@ for i in range(1,11):
         add_fraud = fraud_trans.sample(n=num_fraud_trans, replace=True,random_state=1575)
         #adding fraud transactions back to df1
         df1=pd.concat([df1,add_fraud],axis=0)
-
  
     
     #split into training, 'testing' (finding the adversarial best strategy data frame), out of time (validation set)
@@ -448,6 +448,7 @@ for i in range(1,11):
         fn_rate.append(FNR)
 
     best_strat = fn_rate.index(max(fn_rate))
+    print("The Best Strategy is: ", best_strat)
     best_strat_list.append(best_strat)
     best_fold = all_batches[best_strat]
 
