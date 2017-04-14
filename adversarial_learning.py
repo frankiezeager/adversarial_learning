@@ -94,7 +94,7 @@ for i in range(1,11):
         #find percent fraud in current df
         df_pct_fraud=sum(df1.FRD_IND==1)/len(df1)
         #find difference between this and the 4% fraud desired
-        pct_fraud_needed=.04-df_pct_fraud
+        pct_fraud_needed=.05-df_pct_fraud
         #pct_fraud_needed=.15
         #find number of fraud transactions needed
         num_fraud_trans=math.floor(pct_fraud_needed*len(df1))
@@ -188,7 +188,10 @@ for i in range(1,11):
 #########Gaussian Mixture Model to Determine Strategies#############
 
     #subset df to include only pertinent (adversarial-controlled) continuous vars
-    strat_ind = [0, 1, 2, 3, 4, 6, 9] 
+    #account current balance, authorization amount, authorization outstanding amount
+    #and plastic issue duration
+    
+    strat_ind =[0,2,3,6] 
     strategy_df= pd.DataFrame(test.iloc[:,strat_ind]) 
 
 
@@ -322,7 +325,7 @@ for i in range(1,11):
         #find percent fraud in current df
         df_pct_fraud=sum(df1.FRD_IND==1)/len(df1)
         #find difference between this and the 4% fraud desired
-        pct_fraud_needed=.04-df_pct_fraud
+        pct_fraud_needed=.05-df_pct_fraud
         #pct_fraud_needed=.15
         #find number of fraud transactions needed
         num_fraud_trans=math.floor(pct_fraud_needed*len(df1))
@@ -409,7 +412,10 @@ for i in range(1,11):
 #########Gaussian Mixture Model to Determine Strategies#############
 
     #subset df to include only pertinent (adversarial-controlled) continuous vars
-    strat_ind = [0, 1, 2, 3, 4, 6, 9] 
+    #account current balance, authorization amount, authorization outstanding amount
+    #and plastic issue duration
+    
+    strat_ind =[0,2,3,6] 
     strategy_df= pd.DataFrame(test.iloc[:,strat_ind]) 
 
 
