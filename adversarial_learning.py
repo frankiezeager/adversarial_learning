@@ -94,7 +94,7 @@ for i in range(1,11):
         #find percent fraud in current df
         df_pct_fraud=sum(df1.FRD_IND==1)/len(df1)
         #find difference between this and the 4% fraud desired
-        pct_fraud_needed=.05-df_pct_fraud
+        pct_fraud_needed=.15-df_pct_fraud
         #pct_fraud_needed=.15
         #find number of fraud transactions needed
         num_fraud_trans=math.floor(pct_fraud_needed*len(df1))
@@ -199,7 +199,7 @@ for i in range(1,11):
     lowest_bic = np.infty
     bic = []
     # Fit a Gaussian mixture with EM
-    gmm = mixture.GaussianMixture(n_components=6,covariance_type='full',random_state=1575)
+    gmm = mixture.GaussianMixture(n_components=6,covariance_type='full')
     gmm.fit(strategy_df)
 
     #assign each transaction a strategy
@@ -238,7 +238,7 @@ for i in range(1,11):
     #Implement SMOTE (add 'good' fraud to the dataset)
     test_cols = best_fold.drop(labels='Strategy Number',axis=1)
     test_cols = test_cols.drop(labels='FRD_IND',axis=1)
-    smote = SMOTE(ratio='auto', kind='regular',random_state=1445)
+    smote = SMOTE(ratio='auto', kind='regular')
     smox, smoy = smote.fit_sample(test_cols, best_fold.FRD_IND)
     smox = pd.DataFrame(smox)
     smoy = pd.DataFrame(smoy)
@@ -321,13 +321,14 @@ for i in range(1,11):
     df1['FRD_IND'] = df1['FRD_IND'].convert_objects(convert_numeric=True)
     
     
+    
     if i!=1:
         #find percent fraud in current df
         df_pct_fraud=sum(df1.FRD_IND==1)/len(df1)
         #find difference between this and the 4% fraud desired
-        pct_fraud_needed=.05-df_pct_fraud
         #pct_fraud_needed=.15
         #find number of fraud transactions needed
+        pct_fraud_needed=.15-df_pct_fraud
         num_fraud_trans=math.floor(pct_fraud_needed*len(df1))
         #num_fraud_trans=num_fraud_trans.astype(int)
         #finding the fraudulent transactions in synthetic data
@@ -423,7 +424,7 @@ for i in range(1,11):
     lowest_bic = np.infty
     bic = []
           # Fit a Gaussian mixture with EM
-    gmm = mixture.GaussianMixture(n_components=6,covariance_type='full',random_state=1575)
+    gmm = mixture.GaussianMixture(n_components=6,covariance_type='full')
     gmm.fit(strategy_df)
 
     #assign each transaction a strategy
@@ -461,7 +462,7 @@ for i in range(1,11):
     #Implement SMOTE (add 'good' fraud into the dataset)
     test_cols = best_fold.drop(labels='Strategy Number',axis=1)
     test_cols = test_cols.drop(labels='FRD_IND',axis=1)
-    smote = SMOTE(ratio='auto', kind='regular',random_state=1445)
+    smote = SMOTE(ratio='auto', kind='regular')
     smox, smoy = smote.fit_sample(test_cols, best_fold.FRD_IND)
     smox = pd.DataFrame(smox)
     smoy = pd.DataFrame(smoy)
