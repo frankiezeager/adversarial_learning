@@ -3,9 +3,11 @@
 """
 Created on Thu Apr  6 18:29:49 2017
 
-
 @author: frankiezeager
 """
+
+
+
 import pandas as pd
 import numpy as np
 import math
@@ -82,12 +84,13 @@ i_num = 0
 fold_n=[1,2,3,6,10]
 
 
+
 ### ROC Curve (adversarial learning) ###
 
 lw=2
 colors = cycle(['cyan', 'indigo', 'seagreen','darkorange','magenta'])
 folds_list=[adv_learning_oot[0].copy(deep=True),adv_learning_oot[1].copy(deep=True),adv_learning_oot[2].copy(deep=True),adv_learning_oot[5].copy(deep=True),adv_learning_oot[9].copy(deep=True)]
-model_list2=[adv_learning_models[0],adv_learning_models[1],adv_learning_models[2],adv_learning_models[5],adv_learning_oot[9].copy(deep=True)]
+model_list2=[adv_learning_models[0],adv_learning_models[1],adv_learning_models[2],adv_learning_models[5],adv_learning_models[9]]
 #folds_list=adv_learning_oot
 #model_list2=adv_learning_models
 for l, color, z in zip(folds_list, colors, model_list2):
@@ -161,7 +164,7 @@ def coverage_curve(df, target_variable_col, predicted_prob_fraud_col, trxn_amoun
 ilist=[1,4,7,10]
 
 folds_list2=[adv_learning_oot[0].copy(deep=True),adv_learning_oot[1].copy(deep=True),adv_learning_oot[2].copy(deep=True),adv_learning_oot[5].copy(deep=True),adv_learning_oot[9].copy(deep=True)]
-model_list2=[adv_learning_models[0],adv_learning_models[1],adv_learning_models[2],adv_learning_models[5],adv_learning_oot[9].copy(deep=True)]
+model_list2=[adv_learning_models[0],adv_learning_models[1],adv_learning_models[2],adv_learning_models[5],adv_learning_models[9]]
 
 val=1
 #run coverage curve:   
@@ -236,7 +239,6 @@ fold_n=[1,2,3,6,10]
 colors = cycle(['cyan', 'indigo', 'seagreen','darkorange','magenta'])
 folds_list=[no_learning_oot[0].copy(deep=True),no_learning_oot[1].copy(deep=True),no_learning_oot[2].copy(deep=True),no_learning_oot[5].copy(deep=True),no_learning_oot[9].copy(deep=True)]
 firstmod=no_learning_mod
-
 
 for l, color in zip(folds_list, colors):
     l=l.copy(deep=True)
