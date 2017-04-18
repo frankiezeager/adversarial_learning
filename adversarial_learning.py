@@ -250,6 +250,7 @@ for i in range(1,11):
     #del df1
 
 
+
 #output files
 val=1
 for file in all_fold_oot:
@@ -323,9 +324,7 @@ for i in range(1,11):
     df1['RCURG_AUTHZN_IND'] = df1['RCURG_AUTHZN_IND'].convert_objects(convert_numeric=True)
     df1['FRD_IND'] = df1['FRD_IND'].convert_objects(convert_numeric=True)
    
-    
-    
-    
+      
     if i!=1:
         #find percent fraud in current df
         df_pct_fraud=sum(df1.FRD_IND==1)/len(df1)
