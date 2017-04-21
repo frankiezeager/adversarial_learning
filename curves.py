@@ -182,6 +182,8 @@ for fold,model,color,i in zip(folds_list2,model_list2,colors,ilist):
     sorted_df.to_csv('adv_learning_coverage_'+str(val)+'.csv')
     #drop model_pred
     fold=fold.drop('model_pred',axis=1)
+    #reduce x axis
+    plt.xlim(0,.05)
     # produce chart
     plt.plot(sorted_df['Trxn_Cumulative'], sorted_df['Fraud_Cumulative'], color=color, label='Round '+str(i))
     plt.xlabel('Cumulative Transactions Examined')
@@ -189,7 +191,7 @@ for fold,model,color,i in zip(folds_list2,model_list2,colors,ilist):
     plt.title('Coverage Curve with Adversarial Learning')
     plt.legend(loc="lower right")
     val=val+1
-    
+
 #save plot
 plt.savefig('adv_learn_coverage(1).png',bbox_inches='tight')
 plt.savefig('adv_learn_coverage(1).svg',bbox_inches='tight')
@@ -309,6 +311,8 @@ for fold,color,i in zip(folds_list4,colors,ilist):
     sorted_df.to_csv('no_learning_coverage_'+str(val)+'.csv')
     #drop model_pred
     new_fold=new_fold.drop('model_pred',axis=1)
+    #reduce x axis
+    plt.xlim(0,.05)
     # produce chart
     plt.plot(sorted_df['Trxn_Cumulative'], sorted_df['Fraud_Cumulative'], color=color, label='Round '+str(i))
     plt.xlabel('Cumulative Transactions Examined')
