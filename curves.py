@@ -13,7 +13,7 @@ from sklearn.metrics import roc_curve, auc, roc_auc_score
 import matplotlib.pyplot as plt
 from itertools import cycle
 from sklearn.externals import joblib
-#output to local machine on AWS 
+#output to local machine on AWS
 plt.switch_backend('agg')
 
 
@@ -24,13 +24,13 @@ def coverage_curve(df, target_variable_col, predicted_prob_fraud_col, trxn_amoun
     df['Fraud_Cumulative'] = df[target_variable_col].cumsum()*1.0 / df[target_variable_col].sum( )
     df['TrxnCount'] = 1
     df['Trxn_Cumulative'] = df['TrxnCount'].cumsum()*1.0 / df['TrxnCount'].sum( )
-  
+
     return df
 
 ############### Adversarial Learning #####################################################################################################################################
 #read in the validation sets
 
-#load model list 
+#load model list
 adv_learning_models=joblib.load('adv_learning_models.pkl')
 
 adv_learning_oot=[]
@@ -39,35 +39,24 @@ adv_trans_amount = []
 for i in range(1,11):
     file=pd.read_csv('adv_learning_test_'+str(i)+'.csv')
     adv_learning_oot.append(file)
-    
+
     fnr_file = file.copy(deep=True)
     #remove fraud indicator
     fnr_predict=fnr_file.drop('FRD_IND',axis=1)
     #remove index column
     fnr_predict=fnr_predict.drop(fnr_predict.columns[0],axis=1)
-    
+
     model = adv_learning_models[(i-1)]
     fnr_mod = model.predict(fnr_predict)
     fnr_file['pred'] = fnr_mod
-    
+
     trans_sum = 0
     fnr_index = fnr_file.where((fnr_file['pred'] == 0) & (fnr_file['FRD_IND'] == 1))
     trans_sum = fnr_index['AUTHZN_AMT'].sum()
-            
+
     adv_trans_amount.append(trans_sum)
-    
-print("the money lost by adversarial learning by round: ",adv_trans_amount)  
-    
-#adv_learning_models=[]
-#for mod in range(3):
-#    x=joblib.load('adv_learning_model'+(str(mod))+'.pkl')
-#    adv_learning_models.append(x)
 
-
-#Finding False Negatives in Validation Sets
-
-
-
+print("the money lost by adversarial learning by round: ",adv_trans_amount)
 
 
 i_num = 0
@@ -89,18 +78,9 @@ for l, color, z in zip(folds_list, colors, model_list2):
     syntheticdata_test=l.drop('FRD_IND',axis=1)
     #remove index column
     syntheticdata_test=syntheticdata_test.drop(syntheticdata_test.columns[0],axis=1)
-    #syntheticdata_test=syntheticdata_test.drop('model_pred',axis=1)
-    #mod_test2 = z.predict(syntheticdata_test)
     mod_test3 = z.predict_proba(syntheticdata_test)[:,1]
-    #cmfull=confusion_matrix(l['FRD_IND'],mod_test2)
     fpr, tpr, _ = roc_curve(l['FRD_IND'], mod_test3)
-    #fpr, tpr, thresholds = roc_curve(l['FRD_IND'], mod_test3, pos_label=2)
-    #print("The FNR is:", cmfull[0][1])
     print("The Plot AUC score is:", roc_auc_score(l['FRD_IND'],mod_test3 ))
-    #aucscore = roc_auc_score(l['FRD_IND'],mod_test2 )
-    #getting predicted probablilites for fraud
-    #mod_test3 = z.predict_proba(syntheticdata_test)[:,1]
-    #fpr1, tpr1, _ = roc_curve(l['FRD_IND'], mod_test3)
     aucscore = auc(fpr, tpr )
     plt.plot(fpr, tpr, lw=lw, color=color, label='ROC Round %d (area = %0.2f)' % (fold_n[i_num], aucscore))
     i_num += 1
@@ -119,7 +99,7 @@ plt.savefig('adv_learning_roc.png',bbox_inches='tight')
 plt.savefig('adv_learning_roc.svg',bbox_inches='tight')
 #remove plot
 plt.clf()
-    
+
 #print all AUCs
 for fold, model in  zip(adv_learning_oot, adv_learning_models):
     fold=fold.copy(deep=True)
@@ -136,15 +116,15 @@ for fold, model in  zip(adv_learning_oot, adv_learning_models):
 
 
 #### Coverage Curve for Adversarial Learning ####
-  
-    
+
+
 ilist=[1,4,7,10]
 
 folds_list2=[adv_learning_oot[0].copy(deep=True),adv_learning_oot[3].copy(deep=True),adv_learning_oot[6].copy(deep=True),adv_learning_oot[9].copy(deep=True)]
 model_list2=[adv_learning_models[0],adv_learning_models[3],adv_learning_models[6],adv_learning_models[9]]
 
 val=1
-#run coverage curve:   
+#run coverage curve:
 for fold,model,color,i in zip(folds_list2,model_list2,colors,ilist):
     fold=fold.copy(deep=True)
     #remove ground truth column
@@ -171,13 +151,13 @@ plt.savefig('adv_learn_coverage(1).png',bbox_inches='tight')
 plt.savefig('adv_learn_coverage(1).svg',bbox_inches='tight')
 
 #remove plot
-plt.clf()   
+plt.clf()
 
 
 
 
 ##################### Adversary learns, classifier remains the same (no adv learning)############################################
-#load model list 
+#load model list
 no_learning_mod=joblib.load('no_learning_model.pkl')
 
 no_learning_oot=[]
@@ -187,26 +167,26 @@ nolearn_trans_amount = []
 for i in range(1,11):
     file=pd.read_csv('no_learning_test_'+str(i)+'.csv')
     no_learning_oot.append(file)
-    
+
     fnr_file = file.copy(deep=True)
     #remove fraud indicator
     fnr_predict=fnr_file.drop('FRD_IND',axis=1)
     #remove index column
     fnr_predict=fnr_predict.drop(fnr_predict.columns[0],axis=1)
-    
+
     model = no_learning_mod
     fnr_mod = model.predict(fnr_predict)
     fnr_file['pred'] = fnr_mod
-    
+
     trans_sum = 0
     fnr_index = fnr_file.where((fnr_file['pred'] == 0) & (fnr_file['FRD_IND'] == 1))
     trans_sum = fnr_index['AUTHZN_AMT'].sum()
-            
+
     nolearn_trans_amount.append(trans_sum)
 
-print("the money lost without learning by round: ",nolearn_trans_amount)  
+print("the money lost without learning by round: ",nolearn_trans_amount)
 
-    
+
 diff_list = [a_i - b_i for a_i, b_i in zip(adv_trans_amount, nolearn_trans_amount)]
 
 i_num = 0
@@ -228,7 +208,7 @@ for l, color in zip(folds_list, colors):
     aucscore = auc(fpr, tpr )
     plt.plot(fpr, tpr, lw=lw, color=color, label='ROC Round %d (area = %0.2f)' % (fold_n[i_num], aucscore))
     i_num += 1
-    
+
 #adding ROC curve code
 plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
 plt.xlim([-0.05, 1.05])
@@ -253,7 +233,7 @@ for fold in no_learning_oot:
     syntheticdata_test=syntheticdata_test.drop(syntheticdata_test.columns[0],axis=1)
     mod_test3 = model.predict_proba(syntheticdata_test)[:,1]
     fpr, tpr, _ = roc_curve(fold['FRD_IND'], mod_test3)
-    print("All Rounds No Learning AUC score is:", roc_auc_score(fold['FRD_IND'],mod_test3 ))  
+    print("All Rounds No Learning AUC score is:", roc_auc_score(fold['FRD_IND'],mod_test3 ))
 
 ### Coverage Curve ###
 
@@ -261,7 +241,7 @@ ilist=[1,4,7,10]
 folds_list4=[no_learning_oot[0].copy(deep=True),no_learning_oot[3].copy(deep=True),no_learning_oot[6].copy(deep=True),no_learning_oot[9].copy(deep=True)]
 
 val=1
-#run coverage curve:   
+#run coverage curve:
 for fold,color,i in zip(folds_list4,colors,ilist):
     fold=fold.copy(deep=True)
     model=firstmod
