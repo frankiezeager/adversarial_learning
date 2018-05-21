@@ -5,10 +5,8 @@ The contributions of this project are the following:
 2. Utilizing Gaussian Mixture Models (GMMs) to segment the distribution space of continuous attributes as a means to find possible adversarial strategies.
 
 ## Instructions: 
-- For compatibility with the originial dataset do the following:
-  - Rename the 10th file to training_part_010_of_10.txt (add the initial 0)
-- Run the adversarial_learning.py file first
-- Then run the curves.py file
+- Run `python adversarial_learning.py` in order to train the model
+- Once the model is trained, you can output the ROC curves by using `python curves.py`
 
 ### Dependencies:
 - Python 3.5
